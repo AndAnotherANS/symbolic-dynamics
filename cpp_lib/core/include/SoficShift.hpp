@@ -1,6 +1,4 @@
-#ifndef SOPHICSHIFT_HPP
-#define SOPHICSHIFT_HPP
-
+#pragma once
 #include "ShiftSpace.hpp"
 #include "Graph.hpp"
 
@@ -16,8 +14,5 @@ public:
 
     SoficShift(UnweightedMatrixGraph edge_shift);
 
-    ~SoficShift();
-
 };
 
-#endif // SOPHICSHIFT_HPP

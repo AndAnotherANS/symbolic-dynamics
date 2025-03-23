@@ -23,3 +23,8 @@ SFT::SFT(const std::vector<std::vector<int> >& forbidden_words) : Mstep(0)
         this->forbidden_words.insert(language.hash_word(word));
     }
 }
+
+UnweightedMatrixGraph SFT::build_edge_shift(int mstep) const
+{
+    //todo
+}

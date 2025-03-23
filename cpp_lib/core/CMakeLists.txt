@@ -5,11 +5,12 @@ add_library(core SHARED
     src/Graph.cpp
     src/Language.cpp
     src/SFT.cpp
+    src/SoficShift.cpp
+    src/ShiftSpace.cpp
 )
 
 # Include directories
 
-target_include_directories(core PRIVATE include_private)
 target_include_directories(core PUBLIC include)
 
 # Link libraries

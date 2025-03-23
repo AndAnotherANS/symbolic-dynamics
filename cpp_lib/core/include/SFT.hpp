@@ -1,6 +1,4 @@
-#ifndef SFT_HPP
-#define SFT_HPP
-
+#pragma once
 #include <vector>
 #include <unordered_map>
 #include <string>
@@ -37,6 +35,3 @@ public:
 
     ~SFT();
 };
-
-
-#endif // SFT_HPP
