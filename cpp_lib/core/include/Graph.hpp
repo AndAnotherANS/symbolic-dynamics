@@ -57,14 +57,15 @@ private:
     AdjacencyList adjacency_list;
 };
 
-template class AdjacencyListGraph<float>;
-typedef AdjacencyListGraph<float> WeightedAdjacencyListGraph;
+template class AdjacencyListGraph<double>;
+typedef AdjacencyListGraph<double> WeightedAdjacencyListGraph;
 
 template class AdjacencyListGraph<int>;
 typedef AdjacencyListGraph<int> UnweightedAdjacencyListGraph;
 
-template class MatrixGraph<float>;
-typedef MatrixGraph<float> WeightedMatrixGraph;
+template class MatrixGraph<double>;
+typedef MatrixGraph<double> WeightedMatrixGraph;
 
 template class MatrixGraph<int>;
 typedef MatrixGraph<int> UnweightedMatrixGraph;
+
