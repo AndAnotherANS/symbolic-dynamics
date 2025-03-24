@@ -3,25 +3,43 @@
 #include <set>
 #include <string>
 
+typedef std::vector<int> Word;
+
 class Language
 {
 protected:
-    int n_symbols;
+    int n_symbols = 0;
 public:
-    Language();
+    Language() = default;
     Language(int n_symbols);
-    virtual std::string hash_word(const std::vector<int>& word);
-    virtual std::vector<std::vector<int> > get_finite_words(int n) const = 0;
+    virtual std::string hash_word(const Word& word) const; 
+    virtual std::vector<Word> get_finite_words(int n) const = 0;
 };
 
 
-std::vector<std::vector<int> > extend_words(std::vector<std::vector<int> > words, int n_symbols);
+std::vector<Word> extend_words(std::vector<Word> words, int n_symbols);
 
 
 class FullLanguage : public Language
 {
 public:
-    FullLanguage();
+    FullLanguage() = default;
     FullLanguage(int n_symbols);
-    virtual std::vector<std::vector<int> > get_finite_words(int n) const;
+    virtual std::vector<Word> get_finite_words(int n) const;
+};
+
+class FiniteLanguage : public Language
+{
+protected:
+    std::vector<Word> words = {};
+    std::set<std::string> hashes = {};
+public:
+    FiniteLanguage() = default;
+    FiniteLanguage(int n_symbols);
+    FiniteLanguage(int n_symbols, const std::vector<Word>& words);
+    virtual std::vector<Word> get_finite_words(int n) const;
+    void add_word(const Word& word);
+    void add_words(const std::vector<Word>& words);
+    bool contains(const Word& word) const;
+
 };
