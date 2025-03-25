@@ -72,11 +72,11 @@ public:
 
     MatrixGraph(const Matrix& adjacency_matrix, const LabelMatrix& label_matrix);
 
-    virtual void add_edge(const int src, const int dest, TWeight weight, std::string label) override;
+    virtual void add_edge(const int src, const int dest, TWeight weight, std::string label="") override;
 
     virtual void remove_edge(const int src, const int dest) override;
 
-    virtual int add_node(std::string label) override;
+    virtual int add_node(std::string label="") override;
 
     virtual std::vector<Edge<TWeight> > edges() const override;
 
@@ -117,9 +117,9 @@ public:
 
     virtual int add_node(std::string label="") override;
 
-    virtual void add_edge(const int src, const int dest, const TWeight weight, std::string label);
+    virtual void add_edge(const int src, const int dest, const TWeight weight, std::string label="") override;
 
-    virtual void remove_edge(const int src, const int dest);
+    virtual void remove_edge(const int src, const int dest) override;
 
     virtual std::vector<Edge<TWeight> > edges() const override;
 
