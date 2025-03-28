@@ -1,8 +1,7 @@
-#include "Language.hpp"
-#include "Graph.hpp"
+#include "SFT.hpp"
 
 int main(int argc, char const *argv[])
 {
-    MatrixGraph<int> graph(3);
+    SFT sft(2, {{1, 1}});
     return 0;
 }

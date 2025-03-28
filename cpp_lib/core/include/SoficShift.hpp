@@ -10,9 +10,16 @@ protected:
     UnweightedMatrixGraph edge_shift;
 
 public:
-    SoficShift();
+    SoficShift() = default;
 
-    SoficShift(UnweightedMatrixGraph edge_shift);
+    SoficShift(unsigned int n_symbols, UnweightedMatrixGraph edge_shift);
+
+    [[nodiscard]] UnweightedMatrixGraph get_edge_shift() const;
+
+    [[nodiscard]] bool isValidSequence(const Word &sequence) const override;
+
+    ~SoficShift() override = default;
+
 
 };
 

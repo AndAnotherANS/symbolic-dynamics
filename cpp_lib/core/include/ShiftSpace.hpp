@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include "Language.hpp"
 
 class ShiftSpace {
 protected:
@@ -10,7 +11,8 @@ public:
     ShiftSpace();
 
     void initialize(const std::vector<std::string>& symbols);
-    bool isValidSequence(const std::string& sequence) const;
+    [[nodiscard]] virtual bool isValidSequence(const Word& sequence) const = 0;
 
+    virtual ~ShiftSpace() = default;
 };
 

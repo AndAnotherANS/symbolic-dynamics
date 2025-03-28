@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(SymbolicDynamics)
 
+cmake_policy(SET CMP0135 NEW)
 
 
 include(FetchContent)

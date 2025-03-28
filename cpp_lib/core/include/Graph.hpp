@@ -1,22 +1,36 @@
 #pragma once
+#include <utility>
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include "Language.hpp"
 #include <stdexcept>
+#include <algorithm>
 
 template <typename TWeight=double>
 struct Edge
 {
-    int source;
-    int dest;
-    TWeight weight;
-    std::string label;
+    unsigned int source = 0;
+    unsigned int dest = 0;
+    TWeight weight = 0;
+    Word label;
+
+    bool operator<(const Edge &other) const
+    {
+        if (source == other.source) return dest < other.dest;
+        return source < other.source;
+    }
 };
 
 struct Node
 {
     int index;
-    std::string label;
+    Word label;
+
+    bool operator<(const Node &other) const
+    {
+        return index < other.index;
+    }
 };
 
 template <typename TWeight=double>
@@ -24,77 +38,89 @@ class Graph
 {
 public:
 
-    virtual void add_edge(const int src, const int dest, TWeight weight, std::string label="") = 0;
+    virtual void add_edge(unsigned int src, unsigned int dest, TWeight weight, Word label) = 0;
 
-    virtual void remove_edge(const int src, const int dest) = 0;
+    virtual void remove_edge(unsigned int src, unsigned int dest) = 0;
 
-    virtual int add_node(std::string label="") = 0;
+    virtual unsigned int add_node(Word label) = 0;
 
-    virtual std::vector<Edge<TWeight> > edges() const = 0;
+    [[nodiscard]] virtual std::vector<Edge<TWeight> > edges() const = 0;
 
-    virtual std::vector<Node> nodes() const;
+    [[nodiscard]] virtual std::vector<Node> nodes() const;
 
-    virtual bool edge_exists(int src, int dest) const;
+    [[nodiscard]] virtual bool edge_exists(unsigned int src, unsigned int dest) const;
 
-    virtual TWeight get_edge_weight(int src, int dest) const = 0;
+    [[nodiscard]] virtual TWeight get_edge_weight(unsigned int src, unsigned int dest) const = 0;
 
-    virtual std::string get_edge_label(int src, int dest) const = 0;
+    [[nodiscard]] virtual Word get_edge_label(unsigned int src, unsigned int dest) const = 0;
 
-    virtual std::string get_node_label(int index) const;
+    [[nodiscard]] virtual Word get_node_label(unsigned int index) const;
 
-    virtual void set_node_label(int index, std::string label);
+    virtual void set_node_label(unsigned int index, Word label);
 
-    virtual void set_edge_label(int src, int dest, std::string label) = 0;
+    virtual void set_edge_label(unsigned int src, unsigned int dest, Word label) = 0;
 
-    virtual void set_edge_weight(int src, int dest, TWeight weight) = 0;
+    virtual void set_edge_weight(unsigned int src, unsigned int dest, TWeight weight) = 0;
 
-    virtual std::vector<int> neighbors(int index) const = 0;
+    [[nodiscard]] virtual std::vector<unsigned int> neighbors(unsigned int index) const = 0;
 
-    virtual int size() const = 0;
+    [[nodiscard]] virtual unsigned int size() const = 0;
 
-    virtual bool empty() const;
+    [[nodiscard]] virtual bool empty() const;
+
+    virtual ~Graph() = default;
 
 protected:
-    virtual void validate_indices(int src, int dest=0) const;
-    std::vector<std::string> node_labels = {};
+    virtual void validate_indices(unsigned int src, unsigned int dest) const;
+    std::vector<Word> node_labels = {};
 };
 
 template <typename TWeight=double>
 class MatrixGraph : public Graph<TWeight>
 {
-    typedef std::vector<std::vector<TWeight>> Matrix;
-    typedef std::vector<std::vector<std::string>> LabelMatrix;
+    
 public:
+    typedef std::vector<std::vector<TWeight>> Matrix;
+    typedef std::vector<std::vector<Word>> LabelMatrix;
+
     // Empty constructor
-    MatrixGraph();
+    MatrixGraph() = default;
 
-    MatrixGraph(int nodes);
+    explicit MatrixGraph(unsigned int nodes);
 
-    MatrixGraph(const Matrix& adjacency_matrix, const LabelMatrix& label_matrix);
+    MatrixGraph(unsigned int nodes, const std::vector<Word>& labels);
 
-    virtual void add_edge(const int src, const int dest, TWeight weight, std::string label="") override;
+    MatrixGraph(Matrix adjacency_matrix, LabelMatrix label_matrix);
 
-    virtual void remove_edge(const int src, const int dest) override;
+    MatrixGraph(const MatrixGraph&) = default;
 
-    virtual int add_node(std::string label="") override;
+    MatrixGraph<TWeight> & operator=(const MatrixGraph<TWeight> &other);
 
-    virtual std::vector<Edge<TWeight> > edges() const override;
+    void add_edge(unsigned int src, unsigned int dest, TWeight weight, Word label) override;
 
-    virtual TWeight get_edge_weight(int src, int dest) const override;
+    void remove_edge(unsigned int src, unsigned int dest) override;
 
-    virtual std::string get_edge_label(int src, int dest) const override;
+    int unsigned add_node(Word label) override;
 
-    virtual void set_edge_label(int src, int dest, std::string label) override;
+    std::vector<Edge<TWeight> > edges() const override;
 
-    virtual void set_edge_weight(int src, int dest, TWeight weight) override;
+    TWeight get_edge_weight(unsigned int src, unsigned int dest) const override;
 
-    virtual std::vector<int> neighbors(int index) const override;
+    [[nodiscard]] Word get_edge_label(unsigned int src, unsigned int dest) const override;
 
-    virtual int size() const override;
+    void set_edge_label(unsigned int src, unsigned int dest, Word label) override;
+
+    void set_edge_weight(unsigned int src, unsigned int dest, TWeight weight) override;
+
+    [[nodiscard]] std::vector<unsigned int> neighbors(unsigned int index) const override;
+
+    [[nodiscard]] unsigned int size() const override;
 
     const Matrix& get_adjacency_matrix() const;
 
-    const LabelMatrix& get_label_matrix() const;
+    [[nodiscard]] const LabelMatrix& get_label_matrix() const;
+
+    ~MatrixGraph() override = default;
 
 protected:
     LabelMatrix label_matrix = {};
@@ -102,40 +128,49 @@ protected:
 
 };
 
+
+
+
 template <typename TWeight=double>
 class AdjacencyListGraph: public Graph<TWeight>
 {
-
-    typedef std::vector<std::unordered_map<int, Edge<TWeight> > > AdjacencyList;
 public:
+    typedef std::vector<std::unordered_map<int, Edge<TWeight> > > AdjacencyList;
+
     // Empty constructor
-    AdjacencyListGraph();
+    AdjacencyListGraph() = default;
 
-    AdjacencyListGraph(int nodes);
+    explicit AdjacencyListGraph(unsigned int nodes);
 
-    AdjacencyListGraph(const AdjacencyList& adjacency_list);
+    explicit AdjacencyListGraph(AdjacencyList adjacency_list);
 
-    virtual int add_node(std::string label="") override;
+    AdjacencyListGraph(const AdjacencyListGraph&) = default;
 
-    virtual void add_edge(const int src, const int dest, const TWeight weight, std::string label="") override;
+    AdjacencyListGraph& operator=(const AdjacencyListGraph&);
 
-    virtual void remove_edge(const int src, const int dest) override;
+    int unsigned add_node(Word label) override;
 
-    virtual std::vector<Edge<TWeight> > edges() const override;
+    void add_edge(unsigned int src, unsigned int dest, TWeight weight, Word label) override;
 
-    virtual TWeight get_edge_weight(int src, int dest) const override;
+    void remove_edge(unsigned int src, unsigned int dest) override;
 
-    virtual std::string get_edge_label(int src, int dest) const override;
+    std::vector<Edge<TWeight> > edges() const override;
 
-    virtual void set_edge_label(int src, int dest, std::string label) override;
+    TWeight get_edge_weight(unsigned int src, unsigned int dest) const override;
 
-    virtual void set_edge_weight(int src, int dest, TWeight weight) override;
+    [[nodiscard]] Word get_edge_label(unsigned int src, unsigned int dest) const override;
 
-    virtual std::vector<int> neighbors(int index) const override;
+    void set_edge_label(unsigned int src, unsigned int dest, Word label) override;
 
-    virtual int size() const override;
+    void set_edge_weight(unsigned int src, unsigned int dest, TWeight weight) override;
+
+    [[nodiscard]] std::vector<unsigned int> neighbors(unsigned int index) const override;
+
+    [[nodiscard]] unsigned int size() const override;
 
     const AdjacencyList& get_adjacency_list() const;
+
+    ~AdjacencyListGraph() override = default;
 
 protected:
     AdjacencyList adjacency_list = {};
@@ -144,7 +179,7 @@ protected:
 
 // Graph implementations
 template <typename TWeight>
-bool Graph<TWeight>::edge_exists(int src, int dest) const
+bool Graph<TWeight>::edge_exists(unsigned int src, unsigned int dest) const
 {
     // We assume by design that weight of 0 means no edge
     return get_edge_weight(src, dest) != TWeight();
@@ -157,9 +192,9 @@ bool Graph<TWeight>::empty() const
 }
 
 template <typename TWeight>
-std::string Graph<TWeight>::get_node_label(int index) const
+Word Graph<TWeight>::get_node_label(unsigned int index) const
 {
-    this->validate_indices(index);
+    this->validate_indices(index, 0);
     return node_labels[index];
 }
 
@@ -176,42 +211,59 @@ std::vector<Node> Graph<TWeight>::nodes() const
 }
 
 template <typename TWeight>
-void Graph<TWeight>::set_node_label(int index, std::string label) 
+void Graph<TWeight>::set_node_label(unsigned int index, Word label)
 {
-    if (index < 0 || index > node_labels.size())
+    if (index > node_labels.size())
     {
         return; // todo: log warning
     }
     
-    node_labels[index] = label;
+    node_labels[index] = std::move(label);
 }
 
 template <typename TWeight>
-void Graph<TWeight>::validate_indices(int src, int dest) const
+void Graph<TWeight>::validate_indices(unsigned int src, unsigned int dest) const
 {
-    if(src < 0 || src >= size() || dest < 0 || dest >= size())
+    if(src >= size() || dest >= size())
     {
         throw std::out_of_range("Source or destination index out of range");
     }
 }
 
 // MatrixGraph implementations
-template <typename TWeight>
-MatrixGraph<TWeight>::MatrixGraph() {}
 
 template <typename TWeight>
-MatrixGraph<TWeight>::MatrixGraph(int nodes) {
+MatrixGraph<TWeight>::MatrixGraph(unsigned int nodes) {
     adjacency_matrix = std::vector<std::vector<TWeight>>(nodes, std::vector<TWeight>(nodes, TWeight()));
-    label_matrix = std::vector<std::vector<std::string>>(nodes, std::vector<std::string>(nodes, ""));
-    this->node_labels = std::vector<std::string>(nodes, "");
+    label_matrix = std::vector<std::vector<Word>>(nodes, std::vector<Word>(nodes, Word()));
+    this->node_labels = std::vector<Word>(nodes, Word());
 }
 
 template <typename TWeight>
-MatrixGraph<TWeight>::MatrixGraph(const Matrix& adjacency_matrix, const LabelMatrix& label_matrix)
-    : adjacency_matrix(adjacency_matrix), label_matrix(label_matrix) {}
+MatrixGraph<TWeight>::MatrixGraph(unsigned int nodes, const std::vector<Word>& labels) {
+    if (labels.size() != nodes)
+    {
+        throw std::invalid_argument("Number of labels must match number of nodes");
+    }
+    adjacency_matrix = std::vector<std::vector<TWeight>>(nodes, std::vector<TWeight>(nodes, TWeight()));
+    label_matrix = std::vector<std::vector<Word>>(nodes, std::vector<Word>(nodes, Word()));
+    this->node_labels = labels;
+}
 
 template <typename TWeight>
-int MatrixGraph<TWeight>::add_node(std::string label) 
+MatrixGraph<TWeight>::MatrixGraph(Matrix adjacency_matrix, LabelMatrix label_matrix)
+    : adjacency_matrix(std::move(adjacency_matrix)), label_matrix(std::move(label_matrix)) {}
+
+template<typename TWeight>
+MatrixGraph<TWeight> & MatrixGraph<TWeight>::operator=(const MatrixGraph<TWeight> &other) {
+    this->node_labels = other.node_labels;
+    this->adjacency_matrix = other.adjacency_matrix;
+    this->label_matrix = other.label_matrix;
+    return *this;
+}
+
+template <typename TWeight>
+unsigned int MatrixGraph<TWeight>::add_node(Word label)
 {
     for (auto& row : adjacency_matrix) 
     {
@@ -221,16 +273,16 @@ int MatrixGraph<TWeight>::add_node(std::string label)
     
     for (auto& row : label_matrix) 
     {
-        row.push_back("");
+        row.push_back(Word());
     }
-    label_matrix.push_back(std::vector<std::string>(label_matrix.size() + 1, ""));
+    label_matrix.push_back(std::vector<Word>(label_matrix.size() + 1, Word()));
 
     this->node_labels.push_back(label);
     return adjacency_matrix.size() - 1;
 }
 
 template <typename TWeight>
-void MatrixGraph<TWeight>::add_edge(const int src, const int dest, TWeight weight, std::string label)
+void MatrixGraph<TWeight>::add_edge(const unsigned int src, const unsigned int dest, TWeight weight, Word label)
 {
     this->validate_indices(src, dest);
     if (weight == TWeight() || this->edge_exists(src, dest))
@@ -242,7 +294,7 @@ void MatrixGraph<TWeight>::add_edge(const int src, const int dest, TWeight weigh
 }
 
 template <typename TWeight>
-void MatrixGraph<TWeight>::remove_edge(const int src, const int dest) 
+void MatrixGraph<TWeight>::remove_edge(const unsigned int src, const unsigned int dest)
 {
     this->validate_indices(src, dest);
     if (!this->edge_exists(src, dest))
@@ -250,16 +302,16 @@ void MatrixGraph<TWeight>::remove_edge(const int src, const int dest)
         return; // todo: log warning if edge does not exist
     }
     adjacency_matrix[src][dest] = TWeight();
-    label_matrix[src][dest] = "";
+    label_matrix[src][dest] = Word();
 }
 
 template <typename TWeight>
 std::vector<Edge<TWeight> > MatrixGraph<TWeight>::edges() const 
 {
     std::vector<Edge<TWeight> > edges;
-    for (int i = 0; i < adjacency_matrix.size(); i++) 
+    for (unsigned int i = 0; i < adjacency_matrix.size(); i++) // first ordered by rows (sources)
     {
-        for (int j = 0; j < adjacency_matrix[i].size(); j++) 
+        for (unsigned int j = 0; j < adjacency_matrix[i].size(); j++) // second ordered by columns (destinations)
         {
             if (adjacency_matrix[i][j] != TWeight()) 
             {
@@ -273,14 +325,14 @@ std::vector<Edge<TWeight> > MatrixGraph<TWeight>::edges() const
 
 
 template <typename TWeight>
-TWeight MatrixGraph<TWeight>::get_edge_weight(int src, int dest) const 
+TWeight MatrixGraph<TWeight>::get_edge_weight(unsigned int src, unsigned int dest) const
 {
     this->validate_indices(src, dest);
     return adjacency_matrix[src][dest];
 }
 
 template <typename TWeight>
-std::string MatrixGraph<TWeight>::get_edge_label(int src, int dest) const 
+Word MatrixGraph<TWeight>::get_edge_label(unsigned int src, unsigned int dest) const
 {
     this->validate_indices(src, dest);
     return label_matrix[src][dest];
@@ -288,7 +340,7 @@ std::string MatrixGraph<TWeight>::get_edge_label(int src, int dest) const
 
 
 template <typename TWeight>
-void MatrixGraph<TWeight>::set_edge_label(int src, int dest, std::string label) 
+void MatrixGraph<TWeight>::set_edge_label(unsigned int src, unsigned int dest, Word label)
 {
     this->validate_indices(src, dest);
     if (!this->edge_exists(src, dest))
@@ -300,7 +352,7 @@ void MatrixGraph<TWeight>::set_edge_label(int src, int dest, std::string label)
 }
 
 template <typename TWeight>
-void MatrixGraph<TWeight>::set_edge_weight(int src, int dest, TWeight weight) 
+void MatrixGraph<TWeight>::set_edge_weight(unsigned int src, unsigned int dest, TWeight weight)
 {
     this->validate_indices(src, dest);
     if (!this->edge_exists(src, dest))
@@ -311,10 +363,10 @@ void MatrixGraph<TWeight>::set_edge_weight(int src, int dest, TWeight weight)
 }
 
 template <typename TWeight>
-std::vector<int> MatrixGraph<TWeight>::neighbors(int index) const 
+std::vector<unsigned int> MatrixGraph<TWeight>::neighbors(unsigned int index) const
 {
-    this->validate_indices(index);
-    std::vector<int> neighbors;
+    this->validate_indices(index, 0);
+    std::vector<unsigned int> neighbors;
     for (int i = 0; i < adjacency_matrix[index].size(); i++) 
     {
         if (adjacency_matrix[index][i] != TWeight()) 
@@ -326,7 +378,7 @@ std::vector<int> MatrixGraph<TWeight>::neighbors(int index) const
 }
 
 template <typename TWeight>
-int MatrixGraph<TWeight>::size() const 
+unsigned int MatrixGraph<TWeight>::size() const
 {
     return adjacency_matrix.size();
 }
@@ -345,22 +397,27 @@ const typename MatrixGraph<TWeight>::LabelMatrix&  MatrixGraph<TWeight>::get_lab
 
 // AdjacencyListGraph implementations
 
-template <typename TWeight>
-AdjacencyListGraph<TWeight>::AdjacencyListGraph() {}
 
 template <typename TWeight>
-AdjacencyListGraph<TWeight>::AdjacencyListGraph(int nodes) 
+AdjacencyListGraph<TWeight>::AdjacencyListGraph(unsigned int nodes)
 {
     adjacency_list = std::vector<std::unordered_map<int, Edge<TWeight>>>(nodes);
-    this->node_labels = std::vector<std::string>(nodes, "");
+    this->node_labels = std::vector<Word>(nodes, Word());
 }
 
 template <typename TWeight>
-AdjacencyListGraph<TWeight>::AdjacencyListGraph(const AdjacencyList& adjacency_list)
-    : adjacency_list(adjacency_list) {}
+AdjacencyListGraph<TWeight>::AdjacencyListGraph(AdjacencyList adjacency_list)
+    : adjacency_list(std::move(adjacency_list)) {}
+
+template<typename TWeight>
+AdjacencyListGraph<TWeight> & AdjacencyListGraph<TWeight>::operator=(const AdjacencyListGraph<TWeight> &other) {
+    this->node_labels = other.node_labels;
+    this->adjacency_list = other.adjacency_list;
+    return *this;
+}
 
 template <typename TWeight>
-int AdjacencyListGraph<TWeight>::add_node(std::string label) 
+unsigned int AdjacencyListGraph<TWeight>::add_node(Word label)
 {
     adjacency_list.push_back(std::unordered_map<int, Edge<TWeight> >());
     this->node_labels.push_back(label);
@@ -369,7 +426,7 @@ int AdjacencyListGraph<TWeight>::add_node(std::string label)
 }
 
 template <typename TWeight>
-void AdjacencyListGraph<TWeight>::add_edge(const int src, const int dest, const TWeight weight, std::string label) 
+void AdjacencyListGraph<TWeight>::add_edge(const unsigned int src, const unsigned int dest, const TWeight weight, Word label)
 {
     this->validate_indices(src, dest);
     if (weight == TWeight() || this->edge_exists(src, dest))
@@ -381,7 +438,7 @@ void AdjacencyListGraph<TWeight>::add_edge(const int src, const int dest, const 
 }
 
 template <typename TWeight>
-void AdjacencyListGraph<TWeight>::remove_edge(const int src, const int dest) 
+void AdjacencyListGraph<TWeight>::remove_edge(const unsigned int src, const unsigned int dest)
 {
     this->validate_indices(src, dest);
     if (!this->edge_exists(src, dest))
@@ -403,11 +460,12 @@ std::vector<Edge<TWeight> > AdjacencyListGraph<TWeight>::edges() const
             edges.push_back(it.second);
         }
     }
+    std::sort(edges.begin(), edges.end());
     return edges;
 }
 
 template <typename TWeight>
-TWeight AdjacencyListGraph<TWeight>::get_edge_weight(int src, int dest) const 
+TWeight AdjacencyListGraph<TWeight>::get_edge_weight(unsigned int src, unsigned int dest) const
 {
     this->validate_indices(src, dest);
     if (adjacency_list[src].find(dest) != adjacency_list[src].end()) 
@@ -418,18 +476,18 @@ TWeight AdjacencyListGraph<TWeight>::get_edge_weight(int src, int dest) const
 }
 
 template <typename TWeight>
-std::string AdjacencyListGraph<TWeight>::get_edge_label(int src, int dest) const 
+Word AdjacencyListGraph<TWeight>::get_edge_label(unsigned int src, unsigned int dest) const
 {
     this->validate_indices(src, dest);
     if (adjacency_list[src].find(dest) != adjacency_list[src].end()) 
     {
         return adjacency_list[src].at(dest).label;
     }
-    return "";
+    return {};
 }
 
 template <typename TWeight>
-void AdjacencyListGraph<TWeight>::set_edge_label(int src, int dest, std::string label) 
+void AdjacencyListGraph<TWeight>::set_edge_label(unsigned int src, unsigned int dest, Word label)
 {
     this->validate_indices(src, dest);
     if (this->edge_exists(src, dest))
@@ -439,7 +497,7 @@ void AdjacencyListGraph<TWeight>::set_edge_label(int src, int dest, std::string 
 }
 
 template <typename TWeight>
-void AdjacencyListGraph<TWeight>::set_edge_weight(int src, int dest, TWeight weight) 
+void AdjacencyListGraph<TWeight>::set_edge_weight(unsigned int src, unsigned int dest, TWeight weight)
 {
     this->validate_indices(src, dest);
     if (this->edge_exists(src, dest))
@@ -449,10 +507,10 @@ void AdjacencyListGraph<TWeight>::set_edge_weight(int src, int dest, TWeight wei
 }
 
 template <typename TWeight>
-std::vector<int> AdjacencyListGraph<TWeight>::neighbors(int index) const 
+std::vector<unsigned int> AdjacencyListGraph<TWeight>::neighbors(unsigned int index) const
 {
-    this->validate_indices(index);
-    std::vector<int> neighbors;
+    this->validate_indices(index, 0);
+    std::vector<unsigned int> neighbors;
     for (auto& it : adjacency_list[index]) 
     {
         neighbors.push_back(it.first);
@@ -461,7 +519,7 @@ std::vector<int> AdjacencyListGraph<TWeight>::neighbors(int index) const
 }
 
 template <typename TWeight>
-int AdjacencyListGraph<TWeight>::size() const 
+unsigned int AdjacencyListGraph<TWeight>::size() const
 {
     return adjacency_list.size();
 }
