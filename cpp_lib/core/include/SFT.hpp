@@ -8,6 +8,7 @@
 
 
 
+
 class SFT: public SoficShift
 {
 protected:
