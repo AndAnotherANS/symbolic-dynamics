@@ -5,6 +5,8 @@
 #include "Graph.hpp"
 #include "SoficShift.hpp"
 #include <set>
+#include <cblas.h>
+
 
 
 
