@@ -1,18 +1,18 @@
 #pragma once
-#include <vector>
+#include "Utils.hpp"
 #include <string>
-#include "Language.hpp"
+#include <vector>
 
-class ShiftSpace {
-protected:
-    std::vector<int> alphabet;  
+class ShiftSpace
+{
+  protected:
+    unsigned int n_symbols = 0;
 
-public:
+  public:
     ShiftSpace();
 
-    void initialize(const std::vector<std::string>& symbols);
-    [[nodiscard]] virtual bool isValidSequence(const Word& sequence) const = 0;
+    void initialize(const std::vector<std::string> &symbols);
+    [[nodiscard]] virtual bool isValidSequence(const Word &sequence) const = 0;
 
     virtual ~ShiftSpace() = default;
 };
-

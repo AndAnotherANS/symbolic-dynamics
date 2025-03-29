@@ -1,15 +1,13 @@
 #pragma once
-#include "ShiftSpace.hpp"
 #include "Graph.hpp"
+#include "ShiftSpace.hpp"
 
-
-
-class SoficShift : public ShiftSpace 
+class SoficShift : public ShiftSpace
 {
-protected:
+  protected:
     UnweightedMatrixGraph edge_shift;
 
-public:
+  public:
     SoficShift() = default;
 
     SoficShift(unsigned int n_symbols, UnweightedMatrixGraph edge_shift);
@@ -19,7 +17,4 @@ public:
     [[nodiscard]] bool isValidSequence(const Word &sequence) const override;
 
     ~SoficShift() override = default;
-
-
 };
-

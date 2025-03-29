@@ -173,4 +173,6 @@ cython_debug/
 # custom
 build/
 .vscode/
-lapack/
+eigen/
+/cmake-build-debug/
+/.clang-format
