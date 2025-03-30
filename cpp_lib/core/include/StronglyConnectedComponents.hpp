@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Graph.hpp"
+#include <cassert>
 
 namespace detail {
 
@@ -87,6 +88,73 @@ struct StronglyConnectedComponentsMatrixGraphTarjan {
     int strongly_connected_component = 0;
 };
 
+template<typename TWeight>
+struct StrongconnectContext {
+    std::vector<std::vector<int>> neighbors;
+    std::vector<int> indices;
+    std::vector<int> lowlinks;
+    std::vector<int> scc_stack;
+    std::vector<bool> on_scc_stack;
+    std::vector<int> sccs;
+    int current_index;
+    int current_scc;
+};
+
+template<typename TWeight>
+void strongconnect(int initial, StrongconnectContext<TWeight>& c) {
+    using NeighborsIter = std::vector<int>::iterator;
+    using DFSContext = std::pair<int, NeighborsIter>;
+
+    auto dfs_stack = std::vector{DFSContext{initial, c.neighbors.at(initial).begin()}};
+
+    while(!dfs_stack.empty()) {
+        auto [v, iter] = dfs_stack.back();
+        dfs_stack.pop_back();
+
+        if(c.indices.at(v) == -1) {
+            c.indices.at(v) = c.current_index;
+            c.lowlinks.at(v) = c.current_index;
+            c.scc_stack.emplace_back(v);
+            c.on_scc_stack.at(v) = true;
+            ++c.current_index;
+        } else {
+            auto w = *iter;
+            c.lowlinks.at(v) = std::min(c.lowlinks.at(v), c.lowlinks.at(w));
+
+            ++iter;
+        }
+
+        auto skip = false;
+        for(; iter != c.neighbors.at(v).end(); ++iter) {
+            auto w = *iter;
+            
+            if(c.indices.at(w) == -1) {
+                dfs_stack.emplace_back(v, iter);
+                dfs_stack.emplace_back(w, c.neighbors.at(w).begin());
+                skip = true;
+                break;
+            } else if(c.on_scc_stack.at(w)) {
+                c.lowlinks.at(v) = std::min(c.lowlinks.at(v), c.indices.at(w));
+            }
+        }
+
+        if(skip) {
+            continue;
+        }
+
+        if(c.lowlinks.at(v) == c.indices.at(v)) {
+            auto w = -1;
+            do {
+                w = c.scc_stack.back();
+                c.scc_stack.pop_back();
+                c.on_scc_stack.at(w) = false;
+                c.sccs.at(w) = c.current_scc;
+            } while(w != v);
+            ++c.current_scc;
+        }
+    }
+}
+
 } // namespace detail
 
 // A structure for storing the return value of strongly_connected_components algorithm
@@ -98,7 +166,7 @@ struct StronglyConnectedComponentsRV {
 // Tarjan's strongly connected components algorithm
 template<typename TWeight>
 StronglyConnectedComponentsRV
-strongly_connected_components(MatrixGraph<TWeight> const& graph) {
+strongly_connected_components_legacy(MatrixGraph<TWeight> const& graph) {
     // TODO: replace with "graph is empty" check once implemented
     if (graph.get_adjacency_matrix().empty()) {
         return {{}, 0};
@@ -110,4 +178,32 @@ strongly_connected_components(MatrixGraph<TWeight> const& graph) {
         sccmg.strongly_connected_components,
         sccmg.strongly_connected_component
     };
+}
+
+template<typename TWeight>
+StronglyConnectedComponentsRV
+strongly_connected_components(Graph<TWeight> const& graph) {
+    const auto n = graph.size();
+    auto context = detail::StrongconnectContext<TWeight>{
+        .neighbors = std::vector<std::vector<int>>(n),
+        .indices = std::vector<int>(n, -1),
+        .lowlinks = std::vector<int>(n, -1),
+        .scc_stack = {},
+        .on_scc_stack = std::vector(n, false),
+        .sccs = std::vector<int>(n, -1),
+        .current_index = 0,
+        .current_scc = 0,
+    };
+
+    for(int v = 0; v < n; ++v) {
+        context.neighbors.at(v) = graph.neighbors(v);
+    }
+
+    for(int v = 0; v < n; ++v) {
+        if(context.indices.at(v) == -1) {
+            detail::strongconnect(v, context);
+        }
+    }
+
+    return { context.sccs, context.current_scc };
 }

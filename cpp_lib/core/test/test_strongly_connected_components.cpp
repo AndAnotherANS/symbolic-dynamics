@@ -2,38 +2,37 @@
 #include "Graph.hpp"
 #include "StronglyConnectedComponents.hpp"
 
-TEST(StrongConnectedComponents, EmptyGraph) {
+TEST(StronglyConnectedComponents, EmptyGraph) {
     MatrixGraph<int> graph;
     auto [scc, n] = strongly_connected_components(graph);
-    ASSERT_EQ(n, 0);
-    ASSERT_TRUE(scc.empty());
+    EXPECT_EQ(n, 0);
+    EXPECT_TRUE(scc.empty());
 }
 
-TEST(StrongConnectedComponents, SimpleLoop) {
+TEST(StronglyConnectedComponents, SimpleLoop) {
     MatrixGraph<int> graph;
     graph.add_node();
     graph.add_edge(0, 0, 1, "");
     auto [scc, n] = strongly_connected_components(graph);
-    ASSERT_EQ(n, 1);
-    ASSERT_EQ(scc[0], scc[1]);
+    EXPECT_EQ(n, 1);
 }
 
-TEST(StrongConnectedComponents, SingleEdge) {
+TEST(StronglyConnectedComponents, SingleEdge) {
     MatrixGraph<int> graph1;
     graph1.add_node();
     graph1.add_node();
     graph1.add_edge(0, 1, 1, "");
     auto [scc1, n1] = strongly_connected_components(graph1);
-    ASSERT_EQ(n1, 2);
-    ASSERT_NE(scc1[0], scc1[1]);
+    EXPECT_EQ(n1, 2);
+    EXPECT_NE(scc1.at(0), scc1.at(1));
 
     MatrixGraph<int> graph2;
     graph2.add_node();
     graph2.add_node();
     graph2.add_edge(1, 0, 1, "");
     auto [scc2, n2] = strongly_connected_components(graph2);
-    ASSERT_EQ(n2, 2);
-    ASSERT_NE(scc2[0], scc2[1]);
+    EXPECT_EQ(n2, 2);
+    EXPECT_NE(scc2.at(0), scc2.at(1));
 
     MatrixGraph<int> graph3;
     graph3.add_node();
@@ -41,11 +40,11 @@ TEST(StrongConnectedComponents, SingleEdge) {
     graph3.add_edge(0, 1, 1, "");
     graph3.add_edge(1, 0, 1, "");
     auto [scc3, n3] = strongly_connected_components(graph3);
-    ASSERT_EQ(n3, 1);
-    ASSERT_EQ(scc3[0], scc3[1]);
+    EXPECT_EQ(n3, 1);
+    EXPECT_EQ(scc3.at(0), scc3.at(1));
 }
 
-TEST(StrongConnectedComponents, Triangle) {
+TEST(StronglyConnectedComponents, Triangle) {
     MatrixGraph<int> graph;
     graph.add_node();
     graph.add_node();
@@ -54,12 +53,12 @@ TEST(StrongConnectedComponents, Triangle) {
     graph.add_edge(1, 2, 1, "");
     graph.add_edge(2, 0, 1, "");
     auto [scc, n] = strongly_connected_components(graph);
-    ASSERT_EQ(n, 1);
-    ASSERT_EQ(scc[0], scc[1]);
-    ASSERT_EQ(scc[0], scc[2]);
+    EXPECT_EQ(n, 1);
+    EXPECT_EQ(scc.at(0), scc.at(1));
+    EXPECT_EQ(scc.at(0), scc.at(2));
 }
 
-TEST(StrongConnectedComponents, TwoTriangles) {
+TEST(StronglyConnectedComponents, TwoTriangles) {
     MatrixGraph<int> graph;
     graph.add_node();
     graph.add_node();
@@ -76,12 +75,12 @@ TEST(StrongConnectedComponents, TwoTriangles) {
     graph.add_edge(0, 3, 1, "");
     graph.add_edge(1, 4, 1, "");
     auto [scc, n] = strongly_connected_components(graph);
-    ASSERT_EQ(n, 2);
-    ASSERT_EQ(scc[0], scc[1]);
-    ASSERT_EQ(scc[0], scc[2]);
-    ASSERT_EQ(scc[3], scc[4]);
-    ASSERT_EQ(scc[3], scc[5]);
-    ASSERT_NE(scc[0], scc[3]);
+    EXPECT_EQ(n, 2);
+    EXPECT_EQ(scc.at(0), scc.at(1));
+    EXPECT_EQ(scc.at(0), scc.at(2));
+    EXPECT_EQ(scc.at(3), scc.at(4));
+    EXPECT_EQ(scc.at(3), scc.at(5));
+    EXPECT_NE(scc.at(0), scc.at(3));
 }
 
 
