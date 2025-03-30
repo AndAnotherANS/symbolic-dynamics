@@ -1,7 +1,15 @@
 
 #include "SoficShift.hpp"
 
-SoficShift::SoficShift() {};
+SoficShift::SoficShift(unsigned int n_symbols, UnweightedMatrixGraph edge_shift) : edge_shift(edge_shift) {};
 
-SoficShift::SoficShift(UnweightedMatrixGraph edge_shift) : edge_shift(edge_shift) {};
 
+UnweightedMatrixGraph SoficShift::get_edge_shift() const
+{
+    return this->edge_shift;
+}
+
+bool SoficShift::isValidSequence(const Word &sequence) const
+{
+    return false; // todo: implement
+}

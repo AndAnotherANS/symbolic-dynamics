@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <limits>
 
 #include "Graph.hpp"
 
@@ -89,20 +90,22 @@ struct [[deprecated]] StronglyConnectedComponentsMatrixGraphTarjan {
 
 template<typename TWeight>
 struct StrongconnectContext {
-    std::vector<std::vector<int>> neighbors;
-    std::vector<int> indices;
-    std::vector<int> lowlinks;
-    std::vector<int> scc_stack;
+    std::vector<std::vector<unsigned int>> neighbors;
+    std::vector<unsigned int> indices;
+    std::vector<unsigned int> lowlinks;
+    std::vector<unsigned int> scc_stack;
+    std::vector<unsigned int> sccs;
     std::vector<bool> on_scc_stack;
-    std::vector<int> sccs;
-    int current_index;
-    int current_scc;
+    unsigned int current_index;
+    unsigned int current_scc;
 };
 
 template<typename TWeight>
 void strongconnect(int initial, StrongconnectContext<TWeight>& c) {
-    using NeighborsIter = std::vector<int>::iterator;
-    using DFSContext = std::pair<int, NeighborsIter>;
+    using NeighborsIter = decltype(c.neighbors.at(0).begin());
+    using DFSContext = std::pair<unsigned int, NeighborsIter>;
+
+    constexpr auto unsigned_int_max = std::numeric_limits<unsigned int>::max();
 
     auto dfs_stack =
         std::vector {DFSContext {initial, c.neighbors.at(initial).begin()}};
@@ -111,7 +114,7 @@ void strongconnect(int initial, StrongconnectContext<TWeight>& c) {
         auto [v, iter] = dfs_stack.back();
         dfs_stack.pop_back();
 
-        if (c.indices.at(v) == -1) {
+        if (c.indices.at(v) == unsigned_int_max) {
             c.indices.at(v) = c.current_index;
             c.lowlinks.at(v) = c.current_index;
             c.scc_stack.emplace_back(v);
@@ -128,7 +131,7 @@ void strongconnect(int initial, StrongconnectContext<TWeight>& c) {
         for (; iter != c.neighbors.at(v).end(); ++iter) {
             auto w = *iter;
 
-            if (c.indices.at(w) == -1) {
+            if (c.indices.at(w) == unsigned_int_max) {
                 dfs_stack.emplace_back(v, iter);
                 dfs_stack.emplace_back(w, c.neighbors.at(w).begin());
                 skip = true;
@@ -143,7 +146,7 @@ void strongconnect(int initial, StrongconnectContext<TWeight>& c) {
         }
 
         if (c.lowlinks.at(v) == c.indices.at(v)) {
-            auto w = -1;
+            auto w = unsigned_int_max;
             do {
                 w = c.scc_stack.back();
                 c.scc_stack.pop_back();
