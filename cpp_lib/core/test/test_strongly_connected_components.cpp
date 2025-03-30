@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include "Graph.hpp"
 #include "StronglyConnectedComponents.hpp"
 
@@ -10,7 +11,7 @@ TEST(StronglyConnectedComponents, EmptyGraph) {
 }
 
 TEST(StronglyConnectedComponents, SimpleLoop) {
-    MatrixGraph<int> graph;
+    AdjacencyListGraph<int> graph;
     graph.add_node();
     graph.add_edge(0, 0, 1, "");
     auto [scc, n] = strongly_connected_components(graph);
@@ -34,7 +35,7 @@ TEST(StronglyConnectedComponents, SingleEdge) {
     EXPECT_EQ(n2, 2);
     EXPECT_NE(scc2.at(0), scc2.at(1));
 
-    MatrixGraph<int> graph3;
+    AdjacencyListGraph<int> graph3;
     graph3.add_node();
     graph3.add_node();
     graph3.add_edge(0, 1, 1, "");
@@ -59,7 +60,7 @@ TEST(StronglyConnectedComponents, Triangle) {
 }
 
 TEST(StronglyConnectedComponents, TwoTriangles) {
-    MatrixGraph<int> graph;
+    AdjacencyListGraph<int> graph;
     graph.add_node();
     graph.add_node();
     graph.add_node();
@@ -82,5 +83,3 @@ TEST(StronglyConnectedComponents, TwoTriangles) {
     EXPECT_EQ(scc.at(3), scc.at(5));
     EXPECT_NE(scc.at(0), scc.at(3));
 }
-
-
