@@ -23,7 +23,10 @@ add_executable(test_graph test/test_graph.cpp)
 target_link_libraries(test_graph gtest_main core)
 add_test(NAME Graph COMMAND test_graph)
 
-
 add_executable(test_sft test/test_sft.cpp)
 target_link_libraries(test_sft gtest_main core)
 add_test(NAME SFT COMMAND test_sft)
+
+add_executable(test_strongly_connected_components test/test_strongly_connected_components.cpp)
+target_link_libraries(test_strongly_connected_components gtest_main core)
+add_test(NAME StronglyConnectedComponents COMMAND test_strongly_connected_components)
