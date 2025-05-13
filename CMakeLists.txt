@@ -14,7 +14,12 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+option(native "Use native implementation of matrices" OFF)
+
+if(NOT ${native})
+    find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+    add_compile_definitions(MATRIX_EIGEN)
+endif ()
 
 add_subdirectory(cpp_lib/core)
 set_property(TARGET core PROPERTY CXX_STANDARD 20)

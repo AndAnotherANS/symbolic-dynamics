@@ -1,5 +1,71 @@
 #include "Utils.hpp"
 
+namespace details
+{
+void generate_full_length_forbidden_words_rec(const Word &word, std::vector<Word> &full_forbidden_words,
+                                              unsigned int n_symbols, unsigned int length)
+{
+    if (word.size() == length)
+    {
+        full_forbidden_words.push_back(word);
+        return;
+    }
+    for (int i = 0; i < n_symbols; i++)
+    {
+        Word new_word_back = word;
+        new_word_back.push_back(i);
+        generate_full_length_forbidden_words_rec(new_word_back, full_forbidden_words, n_symbols, length);
+
+        Word new_word_front = word;
+        new_word_front.insert(new_word_front.begin(), i);
+        generate_full_length_forbidden_words_rec(new_word_front, full_forbidden_words, n_symbols, length);
+    }
+}
+
+std::set<std::string> generate_full_length_forbidden_words(const std::vector<Word> &forbidden_words,
+                                                           unsigned int n_symbols, unsigned int length)
+{
+    std::set<std::string> forbidden_words_set;
+    for (auto &&word : forbidden_words)
+    {
+        auto full_forbidden_words = std::vector<Word>();
+        generate_full_length_forbidden_words_rec(word, full_forbidden_words, n_symbols, length);
+        for (auto &&word2 : full_forbidden_words)
+        {
+            forbidden_words_set.insert(hash_word(word2));
+        }
+    }
+
+    return forbidden_words_set;
+}
+
+void generate_all_words_rec(const Word &word, std::vector<Word> &all_words, unsigned int n_symbols,
+                            unsigned int max_length)
+{
+    if (word.size() == max_length)
+    {
+        all_words.push_back(word);
+        return;
+    }
+    for (int i = 0; i < n_symbols; i++)
+    {
+        Word new_word = word;
+        new_word.push_back(i);
+        generate_all_words_rec(new_word, all_words, n_symbols, max_length);
+    }
+}
+
+std::vector<Word> generate_all_words(unsigned int n_symbols, unsigned int max_length)
+{
+    std::vector<Word> all_words;
+    auto empty_word = Word();
+    generate_all_words_rec(empty_word, all_words, n_symbols, max_length);
+    return all_words;
+}
+
+} // namespace details
+
+
 std::string hash_word(const Word &word)
 {
     std::string hash;
@@ -19,53 +85,4 @@ std::set<std::string> hash_words(const std::vector<Word> &words)
     }
     return hashed_words;
 }
-BlockCode::BlockCode(std::unordered_map<std::string, unsigned int> map, unsigned int length)
-    : map(std::move(map)), length(length)
-{
-}
-unsigned int BlockCode::at(const Word &word) const
-{
-    return map.at(hash_word(word));
-}
 
-unsigned int BlockCode::at(const std::string &word_hash) const
-{
-    return map.at(word_hash);
-}
-unsigned int BlockCode::block_length() const
-{
-    return length;
-}
-
- OneBlockCode::OneBlockCode(std::unordered_map<unsigned int, unsigned int> map): int_map(std::move(map))
-{
-    for (auto &&i : int_map) this->map[hash_word(Word({i.first}))] = i.second;
-    this->length = 1;
-}
-
-
-unsigned int OneBlockCode::at(unsigned int symbol) const
-{
-    return int_map.at(symbol);
-}
-
-Word translate_word(const Word &word, const BlockCode &block_code)
-{
-    Word translated_word;
-    unsigned int block_length = block_code.block_length();
-    for (int i = 0; i < word.size() - block_length; i++)
-    {
-        translated_word.push_back(block_code.at(std::vector(word.begin() + i, word.begin() + i + block_length)));
-    }
-    return translated_word;
-}
-
-Word translate_word(const Word &word, const OneBlockCode &block_code)
-{
-    Word translated_word;
-    for (auto &&symbol : word)
-    {
-        translated_word.push_back(block_code.at(symbol));
-    }
-    return translated_word;
-}

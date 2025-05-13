@@ -6,6 +6,7 @@ add_library(core SHARED
         src/SFT.cpp
         src/SoficShift.cpp
         src/ShiftSpace.cpp
+        src/BlockCode.cpp
 )
 
 # Include directories

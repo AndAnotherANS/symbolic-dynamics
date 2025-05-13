@@ -9,34 +9,19 @@ typedef std::vector<unsigned int> Word;
 std::string hash_word(const Word &word);
 std::set<std::string> hash_words(const std::vector<Word> &words);
 
-class BlockCode
+namespace details
 {
-protected:
-    std::unordered_map<std::string, unsigned int> map;
-    unsigned int length = 0;
-public:
 
-    BlockCode() = default;
-    BlockCode(std::unordered_map<std::string, unsigned int> map, unsigned int length);
+void generate_full_length_forbidden_words_rec(const Word &word, std::vector<Word> &full_forbidden_words,
+                                              unsigned int n_symbols, unsigned int length);
 
-    unsigned int at(const Word &word) const;
-    unsigned int at(const std::string &word_hash) const;
+std::set<std::string> generate_full_length_forbidden_words(const std::vector<Word> &forbidden_words,
+                                                           unsigned int n_symbols, unsigned int length);
 
-    unsigned int block_length() const;
+void generate_all_words_rec(const Word &word, std::vector<Word> &all_words, unsigned int n_symbols,
+                            unsigned int max_length);
 
-};
 
-class OneBlockCode: public BlockCode
-{
-protected:
-    std::unordered_map<unsigned int, unsigned int> int_map;
+std::vector<Word> generate_all_words(unsigned int n_symbols, unsigned int max_length);
 
-public:
-    OneBlockCode() = default;
-    OneBlockCode(std::unordered_map<unsigned int, unsigned int> map);
-    unsigned int at(unsigned int symbol) const;
-};
-
-Word translate_word(const Word &word, const BlockCode &block_code);
-
-Word translate_word(const Word &word, const OneBlockCode &block_code);
+}

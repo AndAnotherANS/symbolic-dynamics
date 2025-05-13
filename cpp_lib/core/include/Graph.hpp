@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include "Matrix.hpp"
 
 template <typename TWeight = double> struct Edge
 {
@@ -78,7 +79,6 @@ template <typename TWeight = double> class MatrixGraph : public Graph<TWeight>
 {
 
   public:
-    typedef Eigen::Matrix<TWeight, -1, -1> Matrix;
     typedef std::vector<std::vector<unsigned int>> LabelMatrix;
 
     // Empty constructor
@@ -88,7 +88,7 @@ template <typename TWeight = double> class MatrixGraph : public Graph<TWeight>
 
     MatrixGraph(unsigned int nodes, const std::vector<Word> &labels);
 
-    MatrixGraph(Matrix adjacency_matrix, LabelMatrix label_matrix);
+    MatrixGraph(Matrix<TWeight> adjacency_matrix, LabelMatrix label_matrix);
 
     MatrixGraph(const MatrixGraph &) = default;
 
@@ -102,7 +102,7 @@ template <typename TWeight = double> class MatrixGraph : public Graph<TWeight>
 
     std::vector<Edge<TWeight>> edges() const override;
 
-    TWeight get_edge_weight(unsigned int src, unsigned int dest) const override;
+    [[nodiscard]] TWeight get_edge_weight(unsigned int src, unsigned int dest) const override;
 
     [[nodiscard]] unsigned int get_edge_label(unsigned int src, unsigned int dest) const override;
 
@@ -114,7 +114,7 @@ template <typename TWeight = double> class MatrixGraph : public Graph<TWeight>
 
     [[nodiscard]] unsigned int size() const override;
 
-    const Matrix &get_adjacency_matrix() const;
+    const Matrix<TWeight> &get_adjacency_matrix() const;
 
     [[nodiscard]] const LabelMatrix &get_label_matrix() const;
 
@@ -122,7 +122,7 @@ template <typename TWeight = double> class MatrixGraph : public Graph<TWeight>
 
   protected:
     LabelMatrix label_matrix = {};
-    Matrix adjacency_matrix = {};
+    Matrix<TWeight> adjacency_matrix = {};
 };
 
 template <typename TWeight = double> class AdjacencyListGraph : public Graph<TWeight>
@@ -220,7 +220,7 @@ template <typename TWeight> void Graph<TWeight>::validate_indices(unsigned int s
 
 template <typename TWeight> MatrixGraph<TWeight>::MatrixGraph(unsigned int nodes)
 {
-    adjacency_matrix = Matrix::Zero(nodes, nodes);
+    adjacency_matrix = Matrix<TWeight>::Zero(nodes, nodes);
     label_matrix = std::vector(nodes, std::vector(nodes, std::numeric_limits<unsigned int>::max()));
     this->node_labels = std::vector(nodes, Word());
 }
@@ -231,13 +231,13 @@ template <typename TWeight> MatrixGraph<TWeight>::MatrixGraph(unsigned int nodes
     {
         throw std::invalid_argument("Number of labels must match number of nodes");
     }
-    adjacency_matrix = Matrix::Zero(nodes, nodes);
+    adjacency_matrix = Matrix<TWeight>::Zero(nodes, nodes);
     label_matrix = std::vector(nodes, std::vector(nodes, std::numeric_limits<unsigned int>::max()));
     this->node_labels = labels;
 }
 
 template <typename TWeight>
-MatrixGraph<TWeight>::MatrixGraph(Matrix adjacency_matrix, LabelMatrix label_matrix)
+MatrixGraph<TWeight>::MatrixGraph(Matrix<TWeight> adjacency_matrix, LabelMatrix label_matrix)
     : label_matrix(std::move(label_matrix)), adjacency_matrix(std::move(adjacency_matrix))
 {
 }
@@ -263,8 +263,7 @@ template <typename TWeight> unsigned int MatrixGraph<TWeight>::add_node(Word lab
     {
         row.push_back(std::numeric_limits<unsigned int>::max());
     }
-    label_matrix.push_back(
-        std::vector<unsigned int>(label_matrix.size() + 1, std::numeric_limits<unsigned int>::max()));
+    label_matrix.emplace_back(label_matrix.size() + 1, std::numeric_limits<unsigned int>::max());
 
     this->node_labels.push_back(label);
     return this->size() - 1;
@@ -293,7 +292,7 @@ template <typename TWeight> void MatrixGraph<TWeight>::remove_edge(const unsigne
     label_matrix[src][dest] = std::numeric_limits<unsigned int>::max();
 }
 
-template <typename TWeight> std::vector<Edge<TWeight>> MatrixGraph<TWeight>::edges() const
+template <typename TWeight> [[nodiscard]] std::vector<Edge<TWeight>> MatrixGraph<TWeight>::edges() const
 {
     std::vector<Edge<TWeight>> edges;
     for (unsigned int i = 0; i < this->size(); i++) // first ordered by rows (sources)
@@ -365,7 +364,7 @@ template <typename TWeight> unsigned int MatrixGraph<TWeight>::size() const
 }
 
 template <typename TWeight>
-const typename MatrixGraph<TWeight>::Matrix &MatrixGraph<TWeight>::get_adjacency_matrix() const
+const Matrix<TWeight> &MatrixGraph<TWeight>::get_adjacency_matrix() const
 {
     return adjacency_matrix;
 }
