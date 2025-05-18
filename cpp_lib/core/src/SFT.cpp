@@ -92,3 +92,15 @@ void SFT::build_edge_shift(const std::vector<Word> &forbidden_words)
     this->one_step_edge_shift = one_step_edge_shift;
     this->edge_shift = edge_shift;
 }
+
+
+
+SFT SFT::get_nth_higher_block_shift(int n) const
+{
+    using details::Path;
+    std::vector<Path> paths = this->paths_of_length(n);
+    UnweightedMatrixGraph result(this->edge_shift.size());
+
+
+
+}

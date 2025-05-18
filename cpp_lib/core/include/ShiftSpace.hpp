@@ -12,7 +12,7 @@ class ShiftSpace
     ShiftSpace();
 
     void initialize(const std::vector<std::string> &symbols);
-    [[nodiscard]] virtual bool isValidSequence(const Word &sequence) const = 0;
+    [[nodiscard]] virtual bool is_valid_sequence(const Word &sequence) const = 0;
 
     virtual ~ShiftSpace() = default;
 };

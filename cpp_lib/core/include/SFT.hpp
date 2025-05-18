@@ -28,5 +28,7 @@ class SFT : public SoficShift
 
     MapBlockCode get_one_step_to_original_code() const;
 
+    [[nodiscard]] SFT get_nth_higher_block_shift(int n) const;
+
     ~SFT() override = default;
 };
