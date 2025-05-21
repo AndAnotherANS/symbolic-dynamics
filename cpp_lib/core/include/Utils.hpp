@@ -1,7 +1,6 @@
 #pragma once
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 typedef std::vector<unsigned int> Word;
@@ -13,15 +12,16 @@ namespace details
 {
 
 void generate_full_length_forbidden_words_rec(const Word &word, std::vector<Word> &full_forbidden_words,
-                                              unsigned int n_symbols, unsigned int length);
+                                              const std::vector<unsigned int> &alphabet, const unsigned int &length);
 
 std::set<std::string> generate_full_length_forbidden_words(const std::vector<Word> &forbidden_words,
-                                                           unsigned int n_symbols, unsigned int length);
+                                                           const std::vector<unsigned int>& alphabet, unsigned int length);
 
-void generate_all_words_rec(const Word &word, std::vector<Word> &all_words, unsigned int n_symbols,
-                            unsigned int max_length);
+void generate_all_words_rec(const Word &word, std::vector<Word> &all_words, const std::vector<unsigned int> &alphabet,
+                            const unsigned int &length);
 
 
-std::vector<Word> generate_all_words(unsigned int n_symbols, unsigned int max_length);
+std::vector<Word> generate_all_words(const std::vector<unsigned int>& alphabet, unsigned int length);
 
 }
+

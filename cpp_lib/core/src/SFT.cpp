@@ -1,35 +1,18 @@
 #include "SFT.hpp"
+#include "BlockCode.hpp"
 #include "Utils.hpp"
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
-
-SFT::SFT(unsigned int n_symbols, const UnweightedMatrixGraph &edge_shift) : SoficShift(n_symbols, edge_shift) {};
-
-SFT::SFT(unsigned int n_symbols, const std::vector<Word> &forbidden_words)
+SFT::SFT(std::vector<unsigned int> alphabet, const std::vector<Word> &forbidden_words)
 {
-    this->n_symbols = n_symbols;
+    this->alphabet = std::move(alphabet);
     build_edge_shift(forbidden_words);
 }
 
-MapBlockCode SFT::get_original_to_one_step_code() const
-{
-    return original_to_one_step_code;
-}
-MapBlockCode SFT::get_one_step_to_original_code() const
-{
-    return one_step_to_original_code;
-}
 
-/*
- * Construction of edge shift from specified set of forbidden blocks
- * based on theorem 2.3.2 from
- * Lind D, Marcus B. An Introduction to Symbolic Dynamics and Coding. Cambridge University Press; 1995.
- *
- * We don't assume that the supplied list of blocks is of the same size, blocks shorter than the longest
- * one are padded with all combinations of symbols from the alphabet to construct all forbidden blocks
- */
 void SFT::build_edge_shift(const std::vector<Word> &forbidden_words)
 {
     unsigned int max_length = 0;
@@ -41,12 +24,31 @@ void SFT::build_edge_shift(const std::vector<Word> &forbidden_words)
         }
     }
 
+    this->M_step = max_length;
+    this->edge_shift = std::get<0>(get_nth_higher_block_shift(max_length));
+}
+
+
+/*
+ * Construction of edge shift from specified set of forbidden blocks
+ * based on theorem 2.3.2 from
+ * Lind D, Marcus B. An Introduction to Symbolic Dynamics and Coding. Cambridge University Press; 1995.
+ *
+ * We don't assume that the supplied list of blocks is of the same size, blocks shorter than the longest
+ * one are padded with all combinations of symbols from the alphabet to construct all forbidden blocks
+ */
+std::tuple<UnweightedMatrixGraph, UnweightedMatrixGraph, BlockCode, BlockCode> SFT::get_nth_higher_block_shift(unsigned int n) const
+{
+    if (n < this->M_step)
+    {
+        throw std::invalid_argument("SFT::get_nth_higher_block_shift invalid parameter");
+    }
     std::set<std::string> forbidden_words_set =
-        details::generate_full_length_forbidden_words(forbidden_words, this->n_symbols, max_length);
-    std::vector<Word> allowed_words = details::generate_all_words(this->n_symbols, max_length - 1);
+        details::generate_full_length_forbidden_words(this->forbidden_words, this->alphabet, n - 1);
+    std::vector<Word> allowed_words = details::generate_all_words(this->alphabet, n);
     std::sort(allowed_words.begin(), allowed_words.end());
 
-    UnweightedMatrixGraph one_step_edge_shift(allowed_words.size(), allowed_words);
+    UnweightedMatrixGraph higher_block_edge_shift(allowed_words.size(), allowed_words);
     UnweightedMatrixGraph edge_shift(allowed_words.size(), allowed_words);
 
     std::unordered_map<std::string, unsigned int> block_code;
@@ -84,23 +86,43 @@ void SFT::build_edge_shift(const std::vector<Word> &forbidden_words)
                 block_code[hash_word(common_word)] = i;
                 inverse_block_code[hash_word(Word({i}))] = common_word[0];
 
-                edge_shift.add_edge(i, j, 1, allowed_words[i][0]);
-                one_step_edge_shift.add_edge(i, j, 1, edge_index++);
+                edge_shift.add_edge(i, j, 1, {allowed_words[i][0]});
+                higher_block_edge_shift.add_edge(i, j, 1, common_word);
             }
         }
     }
-    this->one_step_edge_shift = one_step_edge_shift;
-    this->edge_shift = edge_shift;
+
+    return {edge_shift, higher_block_edge_shift, BlockCode(block_code), BlockCode(inverse_block_code)};
+}
+
+
+unsigned int SFT::get_M_step() const
+{
+    return M_step;
 }
 
 
 
-SFT SFT::get_nth_higher_block_shift(int n) const
+std::tuple<SFT, BlockCode> get_sft_factor_map(const SoficShift& shift)
 {
-    using details::Path;
-    std::vector<Path> paths = this->paths_of_length(n);
-    UnweightedMatrixGraph result(this->edge_shift.size());
+    auto edges = shift.get_edge_shift().edges();
+    unsigned int counter = 0;
+    std::unordered_map<std::string, unsigned int> map;
+    std::vector<unsigned int> alphabet;
+    for (auto && edge : edges)
+    {
+        alphabet.push_back(counter);
+        map[hash_word(edge.label)] = counter++;
+    }
 
+    auto complement = shift.get_edge_shift().complement();
+    std::vector<Word> forbidden_words;
+    for (auto &&edge: complement.edges())
+    {
+        forbidden_words.push_back({edge.source, edge.dest});
+    }
+
+    return {SFT(alphabet, forbidden_words), BlockCode(map)};
 
 
 }

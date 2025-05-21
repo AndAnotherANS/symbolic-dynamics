@@ -1,34 +1,32 @@
 #pragma once
 #include "Graph.hpp"
 #include "SoficShift.hpp"
-#include "BlockCode.hpp"
+#include <memory>
 #include <vector>
+
+class BlockCode;
 
 class SFT : public SoficShift
 {
   protected:
+    unsigned int M_step = 0;
 
-    UnweightedMatrixGraph one_step_edge_shift;
-
-    // Block code transforming original shift to internal representation
-    MapBlockCode original_to_one_step_code;
-
-    // Block code transforming internal shift to original shift
-    MapBlockCode one_step_to_original_code;
+    std::vector<Word> forbidden_words;
 
     void build_edge_shift(const std::vector<Word> &forbidden_words);
 
   public:
     SFT() = default;
 
-    SFT(unsigned int n_symbols, const UnweightedMatrixGraph &edge_shift);
-    SFT(unsigned int n_symbols, const std::vector<Word> &forbidden_words);
+    SFT(std::vector<unsigned int> alphabet, const std::vector<Word> &forbidden_words);
 
-    MapBlockCode get_original_to_one_step_code() const;
+    // edge shift, higher-block edge shift, block code, inverse block code
+    [[nodiscard]] std::tuple<UnweightedMatrixGraph, UnweightedMatrixGraph, BlockCode, BlockCode>
+    get_nth_higher_block_shift(unsigned int n) const;
 
-    MapBlockCode get_one_step_to_original_code() const;
-
-    [[nodiscard]] SFT get_nth_higher_block_shift(int n) const;
+    [[nodiscard]] unsigned int get_M_step() const;
 
     ~SFT() override = default;
 };
+
+std::tuple<SFT, BlockCode> get_sft_factor_map(const SoficShift &shift);

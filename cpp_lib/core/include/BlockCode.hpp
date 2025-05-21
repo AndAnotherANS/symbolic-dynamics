@@ -1,7 +1,8 @@
 #pragma once
 
-#include "SFT.hpp"
+
 #include "SoficShift.hpp"
+#include "SFT.hpp"
 
 #include <Utils.hpp>
 #include <string>
@@ -10,27 +11,25 @@
 class BlockCode
 {
 protected:
+    std::function<unsigned int(const Word&)> internal_fun;
     unsigned int memory=0;
     unsigned int anticipation=0;
 public:
-    virtual unsigned int map(Word &word) const = 0;
+    explicit BlockCode(const std::function<unsigned int(const Word&)>& fun);
+    explicit BlockCode(const std::unordered_map<std::string, unsigned int> &map);
 
-    SoficShift apply(SFT &sft) const;
+
+    [[nodiscard]] unsigned int map(const Word &word) const;
+
+    [[nodiscard]] SoficShift map(const SFT &sft) const;
+    [[nodiscard]] SoficShift map(const SoficShift &sofic_shift) const;
 
     [[nodiscard]] unsigned int get_memory() const;
     [[nodiscard]] unsigned int get_anticipation() const;
     [[nodiscard]] unsigned int get_window_size() const;
 
+    [[nodiscard]] BlockCode compose(const BlockCode &other) const;
+
     virtual ~BlockCode() = default;
 };
 
-
-class MapBlockCode: public BlockCode
-{
-protected:
-    std::unordered_map<std::string, unsigned int> internal_map;
-public:
-    MapBlockCode() = default;
-    explicit MapBlockCode(std::unordered_map<std::string, unsigned int> map);
-    unsigned int map(Word &word) const override;
-};

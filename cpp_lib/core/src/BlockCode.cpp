@@ -1,9 +1,28 @@
 #include "BlockCode.hpp"
 
 
-SoficShift BlockCode::apply(SFT &sft) const
+SoficShift BlockCode::map(const SFT &sft) const
 {
-    UnweightedMatrixGraph higher_block_shift = sft.get_nth_higher_block_shift();
+    auto n = std::max(get_window_size(), sft.get_M_step());
+    auto higher_block_shift = std::get<1>(sft.get_nth_higher_block_shift(n));
+    std::set<unsigned int> images;
+    for (auto &&edge: higher_block_shift.edges())
+    {
+        auto image = this->map(edge.label);
+        images.insert(image);
+        higher_block_shift.set_edge_label(edge.source, edge.dest, {image});
+
+    }
+    SoficShift result(std::vector(images.begin(), images.end()), higher_block_shift);
+    return result;
+}
+
+
+SoficShift BlockCode::map(const SoficShift &sofic_shift) const
+{
+    auto [sft, factor_map] = get_sft_factor_map(sofic_shift);
+    auto composed_map = factor_map.compose((*this));
+    return composed_map.map(sft);
 }
 
 unsigned int BlockCode::get_memory() const
@@ -19,12 +38,26 @@ unsigned int BlockCode::get_window_size() const
 {
     return anticipation + memory + 1;
 }
-
-MapBlockCode::MapBlockCode(std::unordered_map<std::string, unsigned int> map): internal_map(std::move(map)) {}
-
-unsigned int MapBlockCode::map(Word &word) const
+BlockCode BlockCode::compose(const BlockCode &other) const
 {
-    return internal_map.at(hash_word(word));
+    // TODO: implement
+    return *this;
+}
+
+BlockCode::BlockCode(const std::unordered_map<std::string, unsigned int> &map)
+{
+    this->internal_fun = [map](const Word& w) {return map.at(hash_word(w));};
+}
+
+ BlockCode::BlockCode(const std::function<unsigned int(const Word&)>& fun)
+{
+    this->internal_fun = fun;
+}
+
+
+unsigned int BlockCode::map(const Word &word) const
+{
+    return internal_fun(word);
 }
 
 
