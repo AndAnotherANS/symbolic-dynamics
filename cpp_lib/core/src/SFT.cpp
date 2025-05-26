@@ -3,6 +3,7 @@
 #include "Utils.hpp"
 #include <string>
 #include <unordered_map>
+#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -15,7 +16,7 @@ SFT::SFT(std::vector<unsigned int> alphabet, const std::vector<Word> &forbidden_
 
 void SFT::build_edge_shift(const std::vector<Word> &forbidden_words)
 {
-    unsigned int max_length = 0;
+    unsigned int max_length = 1;
     for (auto &&word : forbidden_words)
     {
         if (word.size() > max_length)
@@ -43,8 +44,12 @@ std::tuple<UnweightedMatrixGraph, UnweightedMatrixGraph, BlockCode, BlockCode> S
     {
         throw std::invalid_argument("SFT::get_nth_higher_block_shift invalid parameter");
     }
-    std::set<std::string> forbidden_words_set =
+    std::vector<Word> forbidden_words_vect =
         details::generate_full_length_forbidden_words(this->forbidden_words, this->alphabet, n - 1);
+
+    std::set<std::string> forbidden_words_set;
+    std::ranges::transform(forbidden_words_vect, std::inserter(forbidden_words_set, forbidden_words_set.begin()), hash_word);
+
     std::vector<Word> allowed_words = details::generate_all_words(this->alphabet, n);
     std::sort(allowed_words.begin(), allowed_words.end());
 
@@ -92,7 +97,7 @@ std::tuple<UnweightedMatrixGraph, UnweightedMatrixGraph, BlockCode, BlockCode> S
         }
     }
 
-    return {edge_shift, higher_block_edge_shift, BlockCode(block_code), BlockCode(inverse_block_code)};
+    return {edge_shift, higher_block_edge_shift, BlockCode(block_code, 0, allowed_word_size+1), BlockCode(inverse_block_code, 0, 0)};
 }
 
 
@@ -122,7 +127,7 @@ std::tuple<SFT, BlockCode> get_sft_factor_map(const SoficShift& shift)
         forbidden_words.push_back({edge.source, edge.dest});
     }
 
-    return {SFT(alphabet, forbidden_words), BlockCode(map)};
+    return {SFT(alphabet, forbidden_words), BlockCode(map, 0, 0)};
 
 
 }

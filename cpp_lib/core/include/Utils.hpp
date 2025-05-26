@@ -14,7 +14,7 @@ namespace details
 void generate_full_length_forbidden_words_rec(const Word &word, std::vector<Word> &full_forbidden_words,
                                               const std::vector<unsigned int> &alphabet, const unsigned int &length);
 
-std::set<std::string> generate_full_length_forbidden_words(const std::vector<Word> &forbidden_words,
+std::vector<Word> generate_full_length_forbidden_words(const std::vector<Word> &forbidden_words,
                                                            const std::vector<unsigned int>& alphabet, unsigned int length);
 
 void generate_all_words_rec(const Word &word, std::vector<Word> &all_words, const std::vector<unsigned int> &alphabet,

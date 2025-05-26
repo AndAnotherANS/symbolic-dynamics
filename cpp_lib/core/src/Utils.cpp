@@ -22,21 +22,16 @@ void generate_full_length_forbidden_words_rec(const Word &word, std::vector<Word
     }
 }
 
-std::set<std::string> generate_full_length_forbidden_words(const std::vector<Word> &forbidden_words,
+std::vector<Word> generate_full_length_forbidden_words(const std::vector<Word> &forbidden_words,
                                                            const std::vector<unsigned int>& alphabet, unsigned int length)
 {
-    std::set<std::string> forbidden_words_set;
+    auto full_forbidden_words = std::vector<Word>();
     for (auto &&word : forbidden_words)
     {
-        auto full_forbidden_words = std::vector<Word>();
         generate_full_length_forbidden_words_rec(word, full_forbidden_words, alphabet, length);
-        for (auto &&word2 : full_forbidden_words)
-        {
-            forbidden_words_set.insert(hash_word(word2));
-        }
     }
 
-    return forbidden_words_set;
+    return full_forbidden_words;
 }
 
 void generate_all_words_rec(const Word &word, std::vector<Word> &all_words, const std::vector<unsigned int> &alphabet,

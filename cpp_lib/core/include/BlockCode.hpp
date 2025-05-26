@@ -15,8 +15,8 @@ protected:
     unsigned int memory=0;
     unsigned int anticipation=0;
 public:
-    explicit BlockCode(const std::function<unsigned int(const Word&)>& fun);
-    explicit BlockCode(const std::unordered_map<std::string, unsigned int> &map);
+    explicit BlockCode(const std::function<unsigned int(const Word&)>& fun, unsigned int memory, unsigned int anticipation);
+    explicit BlockCode(const std::unordered_map<std::string, unsigned int> &map, unsigned int memory, unsigned int anticipation);
 
 
     [[nodiscard]] unsigned int map(const Word &word) const;
