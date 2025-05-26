@@ -1,25 +1,23 @@
 #pragma once
-#include "ShiftSpace.hpp"
 #include "Graph.hpp"
+#include "ShiftSpace.hpp"
+
+class BlockCode;
 
 
-
-class SoficShift : public ShiftSpace 
+class SoficShift : public ShiftSpace
 {
-protected:
+  protected:
     UnweightedMatrixGraph edge_shift;
 
-public:
+  public:
     SoficShift() = default;
 
-    SoficShift(unsigned int n_symbols, UnweightedMatrixGraph edge_shift);
+    SoficShift(std::vector<unsigned int> alphabet, UnweightedMatrixGraph edge_shift);
 
     [[nodiscard]] UnweightedMatrixGraph get_edge_shift() const;
 
-    [[nodiscard]] bool isValidSequence(const Word &sequence) const override;
+    [[nodiscard]] bool is_valid_sequence(const Word &sequence) const override;
 
     ~SoficShift() override = default;
-
-
 };
-

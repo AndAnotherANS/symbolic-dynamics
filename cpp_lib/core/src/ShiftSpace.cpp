@@ -1,3 +1,3 @@
 #include "ShiftSpace.hpp"
 
-ShiftSpace::ShiftSpace() {};
+ShiftSpace::ShiftSpace() = default;

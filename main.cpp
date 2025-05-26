@@ -1,7 +1,10 @@
 #include "SFT.hpp"
+#include <random>
+#include <eigen3/Eigen/Dense>
+#include <iostream>
+
 
 int main(int argc, char const *argv[])
 {
-    SFT sft(2, {{1, 1}});
-    return 0;
+
 }

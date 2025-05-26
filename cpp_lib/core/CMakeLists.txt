@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.14)
 
 # Create the library
 add_library(core SHARED
-    src/Graph.cpp
-    src/Language.cpp
-    src/SFT.cpp
-    src/SoficShift.cpp
-    src/ShiftSpace.cpp
+        src/Utils.cpp
+        src/SFT.cpp
+        src/SoficShift.cpp
+        src/ShiftSpace.cpp
+        src/BlockCode.cpp
 )
 
 # Include directories
@@ -15,6 +15,8 @@ target_include_directories(core PUBLIC include)
 
 # Link libraries
 target_link_libraries(core)
+target_link_libraries(core Eigen3::Eigen)
+
 
 # Add tests
 enable_testing()

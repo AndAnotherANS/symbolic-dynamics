@@ -1,35 +1,32 @@
 #pragma once
-#include <vector>
-#include <unordered_map>
-#include <string>
 #include "Graph.hpp"
 #include "SoficShift.hpp"
-#include <set>
+#include <memory>
+#include <vector>
 
+class BlockCode;
 
-
-
-class SFT: public SoficShift
+class SFT : public SoficShift
 {
-protected:
-    unsigned int n_symbols;
-    UnweightedMatrixGraph vertex_shift;
+  protected:
+    unsigned int M_step = 0;
 
-    // Block code transforming original shift to internal representation
-    std::unordered_map<int, Word> recoding_map; 
+    std::vector<Word> forbidden_words;
 
-    UnweightedMatrixGraph build_vertex_shift();
-    UnweightedMatrixGraph build_edge_shift(const std::vector<Word>& forbidden_words) const;
-    UnweightedMatrixGraph build_block_code(const UnweightedMatrixGraph &edge_shift) const;
+    void build_edge_shift(const std::vector<Word> &forbidden_words);
 
-public:
+  public:
     SFT() = default;
 
-    SFT(unsigned int n_symbols, const UnweightedMatrixGraph& edge_shift);
-    SFT(unsigned int n_symbols, const std::vector<std::vector<int> >& forbidden_words);
+    SFT(std::vector<unsigned int> alphabet, const std::vector<Word> &forbidden_words);
 
+    // edge shift, higher-block edge shift, block code, inverse block code
+    [[nodiscard]] std::tuple<UnweightedMatrixGraph, UnweightedMatrixGraph, BlockCode, BlockCode>
+    get_nth_higher_block_shift(unsigned int n) const;
 
+    [[nodiscard]] unsigned int get_M_step() const;
 
     ~SFT() override = default;
 };
 
+std::tuple<SFT, BlockCode> get_sft_factor_map(const SoficShift &shift);
