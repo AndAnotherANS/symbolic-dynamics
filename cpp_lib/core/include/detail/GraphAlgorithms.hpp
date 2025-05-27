@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <limits>
+#include <numeric>
 
 #include "Graph.hpp"
 
@@ -98,6 +99,20 @@ struct StrongconnectContext {
     std::vector<bool> on_scc_stack;
     unsigned int current_index;
     unsigned int current_scc;
+
+    StrongconnectContext(Graph<TWeight> const& graph) :
+        neighbors(graph.size()),
+        indices(graph.size(), -1u),
+        lowlinks(graph.size(), -1u),
+        scc_stack {},
+        sccs(graph.size(), -1u),
+        on_scc_stack(graph.size(), false),
+        current_index {0},
+        current_scc {0} {
+        for (unsigned int v = 0; v < graph.size(); ++v) {
+            neighbors.at(v) = graph.neighbors(v);
+        }
+    }
 };
 
 template<typename TWeight>
@@ -156,6 +171,43 @@ void strongconnect(int initial, StrongconnectContext<TWeight>& c) {
             ++c.current_scc;
         }
     }
+}
+
+template<typename TWeight>
+StrongconnectContext<TWeight>
+strongly_connected_components(Graph<TWeight> const& graph) {
+    auto context = StrongconnectContext(graph);
+    for (unsigned int v = 0; v < graph.size(); ++v) {
+        if (context.indices.at(v) == -1u) {
+            strongconnect(v, context);
+        }
+    }
+    return context;
+}
+
+template<typename TWeight>
+std::pair<StrongconnectContext<TWeight>, int> period(Graph<TWeight> const& graph) {
+    auto const context = detail::strongly_connected_components(graph);
+    auto ks = std::vector<int> {};
+    auto const edges = graph.edges();
+    for (auto const& e : edges) {
+        auto i = static_cast<int>(e.source);
+        auto j = static_cast<int>(e.dest);
+        if (context.sccs.at(i) == context.sccs.at(j)) {
+            ks.push_back(j - i - 1);
+        }
+    }
+
+    int gcd = 0;
+    for (auto k : ks) {
+        std::cout << k << "\n";
+        gcd = std::gcd(gcd, k);
+        if (gcd == 1) {
+            break;
+        }
+    }
+
+    return {context, gcd};
 }
 
 } // namespace detail

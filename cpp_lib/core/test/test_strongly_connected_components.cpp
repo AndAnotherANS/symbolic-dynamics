@@ -1,7 +1,11 @@
 #include <gtest/gtest.h>
 
 #include "Graph.hpp"
-#include "StronglyConnectedComponents.hpp"
+#include "GraphAlgorithms.hpp"
+
+namespace {
+
+} // namespace
 
 TEST(StronglyConnectedComponents, EmptyGraph) {
     MatrixGraph<int> graph;

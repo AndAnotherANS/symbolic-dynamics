@@ -29,3 +29,7 @@ add_test(NAME SFT COMMAND test_sft)
 add_executable(test_strongly_connected_components test/test_strongly_connected_components.cpp)
 target_link_libraries(test_strongly_connected_components gtest_main core)
 add_test(NAME StronglyConnectedComponents COMMAND test_strongly_connected_components)
+
+add_executable(test_period test/test_period.cpp)
+target_link_libraries(test_period gtest_main core)
+add_test(NAME Acyclic COMMAND test_period)
