@@ -7,6 +7,7 @@ add_library(core SHARED
         src/SoficShift.cpp
         src/ShiftSpace.cpp
         src/BlockCode.cpp
+        src/CylinderSet.cpp
 )
 
 # Include directories
