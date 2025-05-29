@@ -24,14 +24,5 @@ CylinderSet::CylinderSet(std::vector<int> fixed_positions, std::vector<unsigned>
 }
 
 
-class Distance
-{
-public:
-    virtual double operator() (CylinderSet cs1&, CylinderSet cs2) const = 0;
-    virtual ~Distance() = default;
-};
-
-class HammingDistance
-
 
 
