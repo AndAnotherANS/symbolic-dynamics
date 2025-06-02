@@ -1,4 +1,5 @@
 #pragma once
+#include "Matrix.hpp"
 #include "Utils.hpp"
 #include "eigen3/Eigen/Dense"
 #include <algorithm>
@@ -7,7 +8,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include "Matrix.hpp"
 
 template <typename TWeight = double> struct Edge
 {
@@ -46,6 +46,8 @@ template <typename TWeight = double> class Graph
 
     [[nodiscard]] virtual std::vector<Edge<TWeight>> edges() const = 0;
 
+    [[nodiscard]] virtual std::vector<Edge<TWeight>> edges_from(unsigned int) const = 0;
+
     [[nodiscard]] virtual std::vector<Node> nodes() const;
 
     [[nodiscard]] virtual bool edge_exists(unsigned int src, unsigned int dest) const;
@@ -77,7 +79,6 @@ template <typename TWeight = double> class Graph
 
 template <typename TWeight = double> class MatrixGraph : public Graph<TWeight>
 {
-
   public:
     typedef std::vector<std::vector<Word>> LabelMatrix;
 
@@ -101,6 +102,8 @@ template <typename TWeight = double> class MatrixGraph : public Graph<TWeight>
     int unsigned add_node(Word label) override;
 
     std::vector<Edge<TWeight>> edges() const override;
+
+    [[nodiscard]] std::vector<Edge<TWeight>> edges_from(unsigned) const override;
 
     [[nodiscard]] TWeight get_edge_weight(unsigned int src, unsigned int dest) const override;
 
@@ -148,6 +151,8 @@ template <typename TWeight = double> class AdjacencyListGraph : public Graph<TWe
     void remove_edge(unsigned int src, unsigned int dest) override;
 
     std::vector<Edge<TWeight>> edges() const override;
+
+    [[nodiscard]] std::vector<Edge<TWeight>> edges_from(unsigned) const override;
 
     TWeight get_edge_weight(unsigned int src, unsigned int dest) const override;
 
@@ -255,9 +260,9 @@ template <typename TWeight> unsigned int MatrixGraph<TWeight>::add_node(Word lab
     unsigned int new_size = this->size() + 1;
     adjacency_matrix.conservativeResize(new_size, new_size);
     Eigen::Matrix<TWeight, 1, -1> zeros = Eigen::Matrix<TWeight, 1, -1>::Zero(new_size);
-    adjacency_matrix.row(new_size-1) << zeros;
+    adjacency_matrix.row(new_size - 1) << zeros;
     Eigen::Matrix<TWeight, -1, 1> zeros_col = Eigen::Matrix<TWeight, -1, 1>::Zero(new_size);
-    adjacency_matrix.col(new_size-1) << zeros_col;
+    adjacency_matrix.col(new_size - 1) << zeros_col;
 
     for (auto &row : label_matrix)
     {
@@ -308,6 +313,19 @@ template <typename TWeight> [[nodiscard]] std::vector<Edge<TWeight>> MatrixGraph
     }
     return edges;
 }
+template <typename TWeight> std::vector<Edge<TWeight>> MatrixGraph<TWeight>::edges_from(unsigned node) const
+{
+    std::vector<Edge<TWeight>> edges;
+    for (unsigned int i = 0; i < this->size(); i++) // first ordered by rows (sources)
+    {
+        if (adjacency_matrix(node, i) != TWeight())
+        {
+            Edge<TWeight> edge = {node, i, adjacency_matrix(node, i), label_matrix[node][i]};
+            edges.push_back(edge);
+        }
+    }
+    return edges;
+}
 
 template <typename TWeight> TWeight MatrixGraph<TWeight>::get_edge_weight(unsigned int src, unsigned int dest) const
 {
@@ -321,8 +339,7 @@ template <typename TWeight> Word MatrixGraph<TWeight>::get_edge_label(unsigned i
     return label_matrix[src][dest];
 }
 
-template <typename TWeight>
-void MatrixGraph<TWeight>::set_edge_label(unsigned int src, unsigned int dest, Word label)
+template <typename TWeight> void MatrixGraph<TWeight>::set_edge_label(unsigned int src, unsigned int dest, Word label)
 {
     this->validate_indices(src, dest);
     if (!this->edge_exists(src, dest))
@@ -363,8 +380,7 @@ template <typename TWeight> unsigned int MatrixGraph<TWeight>::size() const
     return adjacency_matrix.rows();
 }
 
-template <typename TWeight>
-const Matrix<TWeight> &MatrixGraph<TWeight>::get_adjacency_matrix() const
+template <typename TWeight> const Matrix<TWeight> &MatrixGraph<TWeight>::get_adjacency_matrix() const
 {
     return adjacency_matrix;
 }
@@ -444,6 +460,16 @@ template <typename TWeight> std::vector<Edge<TWeight>> AdjacencyListGraph<TWeigh
     return edges;
 }
 
+template <typename TWeight> std::vector<Edge<TWeight>> AdjacencyListGraph<TWeight>::edges_from(unsigned node) const
+{
+    std::vector<Edge<TWeight>> result;
+    for (auto &it : adjacency_list[node])
+    {
+        result.push_back(it.second);
+    }
+    return result;
+}
+
 template <typename TWeight>
 TWeight AdjacencyListGraph<TWeight>::get_edge_weight(unsigned int src, unsigned int dest) const
 {
@@ -455,8 +481,7 @@ TWeight AdjacencyListGraph<TWeight>::get_edge_weight(unsigned int src, unsigned 
     return TWeight();
 }
 
-template <typename TWeight>
-Word AdjacencyListGraph<TWeight>::get_edge_label(unsigned int src, unsigned int dest) const
+template <typename TWeight> Word AdjacencyListGraph<TWeight>::get_edge_label(unsigned int src, unsigned int dest) const
 {
     this->validate_indices(src, dest);
     if (adjacency_list[src].find(dest) != adjacency_list[src].end())
@@ -523,11 +548,12 @@ class UnweightedMatrixGraph final : public MatrixGraph<unsigned int>
     // Empty constructor
     UnweightedMatrixGraph() = default;
 
-    explicit UnweightedMatrixGraph(unsigned int nodes);
+    explicit UnweightedMatrixGraph(unsigned int nodes): MatrixGraph(nodes) {};
 
     UnweightedMatrixGraph(unsigned int nodes, const std::vector<Word> &labels) : MatrixGraph(nodes, labels) {};
 
-    UnweightedMatrixGraph(Matrix<unsigned int> adjacency_matrix, LabelMatrix label_matrix) : MatrixGraph(std::move(adjacency_matrix), std::move(label_matrix)) {};
+    UnweightedMatrixGraph(Matrix<unsigned int> adjacency_matrix, LabelMatrix label_matrix)
+        : MatrixGraph(std::move(adjacency_matrix), std::move(label_matrix)) {};
 
     UnweightedMatrixGraph(const UnweightedMatrixGraph &) = default;
 
@@ -536,12 +562,12 @@ class UnweightedMatrixGraph final : public MatrixGraph<unsigned int>
 
 inline UnweightedMatrixGraph UnweightedMatrixGraph::complement() const
 {
-    Matrix<unsigned int>  edge_matrix;
+    Matrix<unsigned int> edge_matrix;
     edge_matrix.resize(size(), size());
     edge_matrix.fill(1);
-    for (auto && edge: edges())
+    for (auto &&edge : edges())
         edge_matrix(edge.source, edge.dest) = 0;
-    std::vector<std::vector<Word>>  label_matrix;
+    std::vector<std::vector<Word>> label_matrix;
     for (unsigned int i = 0; i < size(); ++i)
         label_matrix.emplace_back(size(), Word());
 

@@ -7,6 +7,8 @@ add_library(core SHARED
         src/SoficShift.cpp
         src/ShiftSpace.cpp
         src/BlockCode.cpp
+        src/CylinderSet.cpp
+        src/Measure.cpp
 )
 
 # Include directories
@@ -19,7 +21,6 @@ target_link_libraries(core Eigen3::Eigen)
 
 
 # Add tests
-enable_testing()
 add_executable(test_graph test/test_graph.cpp)
 target_link_libraries(test_graph gtest_main core)
 add_test(NAME Graph COMMAND test_graph)
@@ -35,3 +36,7 @@ add_test(NAME StronglyConnectedComponents COMMAND test_strongly_connected_compon
 add_executable(test_period test/test_period.cpp)
 target_link_libraries(test_period gtest_main core)
 add_test(NAME Acyclic COMMAND test_period)
+
+add_executable(test_cylinder test/test_cylinder_sets.cpp)
+target_link_libraries(test_cylinder gtest_main core)
+add_test(NAME CylinderSet COMMAND test_cylinder)

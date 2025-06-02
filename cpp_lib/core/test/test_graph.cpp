@@ -148,6 +148,10 @@ TEST(Graph, AbstractClassBehavior)
         {
             return {};
         }
+        [[nodiscard]] std::vector<Edge<>> edges_from(unsigned) const override
+        {
+            return {};
+        }
         [[nodiscard]] double get_edge_weight(unsigned int, unsigned int) const override
         {
             return 0.0;

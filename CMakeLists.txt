@@ -21,6 +21,7 @@ if(NOT ${native})
     add_compile_definitions(MATRIX_EIGEN)
 endif ()
 
+enable_testing()
 add_subdirectory(cpp_lib/core)
 set_property(TARGET core PROPERTY CXX_STANDARD 20)
 
