@@ -1,14 +1,18 @@
 #pragma once
 
+#include "SoficShift.hpp"
 #include "Utils.hpp"
 #include <limits>
+#include <tuple>
+
+const unsigned int WILDCARD = std::numeric_limits<unsigned int>::max();
 
 class CylinderSet
 {
 protected:
 	Word representation;
-	int start;
-	int end;
+	int start=0;
+	int end=-1;
 
 	friend std::tuple<CylinderSet, CylinderSet>
 	_synchronize_representation(const CylinderSet& cs1, const CylinderSet& cs2);
@@ -20,45 +24,61 @@ public:
 
 	CylinderSet(std::vector<int> fixed_positions, std::vector<unsigned int> symbols);
 
-	Word& get_representation() const;
-	int get_start() const;
-	int get_end() const;
+    [[nodiscard]] unsigned int operator[](int index) const;
 
-	virtual ~CylinderSet() = default;
+    [[nodiscard]] Word get_representation() const
+    {
+        return representation;
+    }
+    [[nodiscard]] int get_start() const
+    {
+        return start;
+    }
+    [[nodiscard]] int get_end() const
+    {
+        return end;
+    }
+    [[nodiscard]] std::tuple<int, int> get_range() const
+    {
+        return {start, end};
+    }
+
+    [[nodiscard]] CylinderSet intersection(const CylinderSet& other) const;
+
+    [[nodiscard]] std::vector<CylinderSet> divide_into_disjoint() const;
+
+    [[nodiscard]] bool is_subset_of(const SoficShift &);
+    [[nodiscard]] bool is_subset_of(const CylinderSet &);
+
+    virtual ~CylinderSet() = default;
 };
 
-std::tuple<CylinderSet, CylinderSet> _synchronize_representation(const CylinderSet& cs1, const CylinderSet& cs2)
-{
-	int common_start = std::min(cs1.start, cs2.start);
 
-	int common_end = std::max(cs1.end, cs2.end);
 
-	Word repr1(common_end - common_start, std::numeric_limits<unsigned>::max());
-	std::copy(cs1.representation.begin(), cs1.representation.end(), repr1.begin());
-
-	Word repr2(common_end - common_start, std::numeric_limits<unsigned>::max());
-	std::copy(cs2.representation.begin(), cs2.representation.end(), repr2.begin());
-
-	return { CylinderSet(repr1, common_start, common_end),
-			CylinderSet(repr2, common_start, common_end)};
-}
-
+// Currently we only calculate distances assuming cylinder sets come from a full shift
+// (wildcard symbols can be any symbol from the alphabet, without constraints given by sofic shifts/sfts)
 class Distance
 {
 protected:
-	virtual double dist(CylinderSet &cs1, CylinderSet &cs2) const =0;
+	virtual std::tuple<double, double> _bound(CylinderSet &cs1, CylinderSet &cs2) const =0;
 public:
-	double operator()(CylinderSet &cs1, CylinderSet &cs2) const
+	std::tuple<double, double> bound(CylinderSet &cs1, CylinderSet &cs2) const
 	{
 		auto [intermediate1, intermediate2] = _synchronize_representation(cs1, cs2);
-		return dist(intermediate1, intermediate2);
+		return _bound(intermediate1, intermediate2);
 	}
 
 	virtual ~Distance() = default;
 };
 
-class HammingDistance: Distance
+class HammingDistance: public Distance
 {
 protected:
-	double dist(CylinderSet &cs1, CylinderSet &cs2) const override;
+	std::tuple<double, double> _bound(CylinderSet &cs1, CylinderSet &cs2) const override;
+};
+
+class PadicDistance: public Distance
+{
+protected:
+    std::tuple<double, double> _bound(CylinderSet &cs1, CylinderSet &cs2) const override;
 };

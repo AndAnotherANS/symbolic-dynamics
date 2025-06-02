@@ -17,7 +17,14 @@ class SoficShift : public ShiftSpace
 
     [[nodiscard]] UnweightedMatrixGraph get_edge_shift() const;
 
+    [[nodiscard]] std::vector<unsigned int> get_alphabet() const
+    {
+        return alphabet;
+    }
+
     [[nodiscard]] bool is_valid_sequence(const Word &sequence) const override;
 
     ~SoficShift() override = default;
 };
+
+class
