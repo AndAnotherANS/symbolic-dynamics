@@ -26,5 +26,3 @@ class SoficShift : public ShiftSpace
 
     ~SoficShift() override = default;
 };
-
-class
