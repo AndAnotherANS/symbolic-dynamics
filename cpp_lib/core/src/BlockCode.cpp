@@ -1,7 +1,7 @@
 #include "BlockCode.hpp"
 
 
-SoficShift BlockCode::map(const SFT &sft) const
+SoficShift<false, false> BlockCode::map(const SFT &sft) const
 {
     auto window_size = get_window_size();
     auto n = std::max(get_window_size(), sft.get_M_step());
@@ -15,17 +15,11 @@ SoficShift BlockCode::map(const SFT &sft) const
         higher_block_shift.set_edge_label(edge.source, edge.dest, {image});
 
     }
-    SoficShift result(std::vector(images.begin(), images.end()), higher_block_shift);
+    SoficShift<false, false> result(std::vector(images.begin(), images.end()), higher_block_shift);
     return result;
 }
 
 
-SoficShift BlockCode::map(const SoficShift &sofic_shift) const
-{
-    auto [sft, factor_map] = get_sft_factor_map(sofic_shift);
-    auto composed_map = factor_map.compose((*this));
-    return composed_map.map(sft);
-}
 
 unsigned int BlockCode::get_memory() const
 {
@@ -42,8 +36,16 @@ unsigned int BlockCode::get_window_size() const
 }
 BlockCode BlockCode::compose(const BlockCode &other) const
 {
-    // TODO: implement
-    return *this;
+
+    auto fun = [this, other](const Word& w)
+    {
+        Word intermediate;
+        for (unsigned i = memory; i < w.size() - anticipation - 1; i++)
+            intermediate.push_back(this->map(Word(w.begin() + i, w.begin() + i + get_window_size())));
+        return other.map(intermediate);
+    };
+
+    return BlockCode(fun, memory + other.memory, anticipation + other.anticipation);
 }
 
 BlockCode::BlockCode(const std::unordered_map<std::string, unsigned int> &map, unsigned int memory, unsigned int anticipation): memory(memory), anticipation(anticipation)

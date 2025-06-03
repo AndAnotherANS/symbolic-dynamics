@@ -3,6 +3,7 @@
 #include <cassert>
 #include <limits>
 #include <numeric>
+#include<iostream>
 
 #include "Graph.hpp"
 

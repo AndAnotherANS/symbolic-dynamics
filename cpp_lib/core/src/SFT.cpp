@@ -10,13 +10,14 @@
 SFT::SFT(std::vector<unsigned int> alphabet, const std::vector<Word> &forbidden_words)
 {
     this->alphabet = std::move(alphabet);
+    this->forbidden_words = forbidden_words;
     build_edge_shift(forbidden_words);
 }
 
 
 void SFT::build_edge_shift(const std::vector<Word> &forbidden_words)
 {
-    unsigned int max_length = 1;
+    unsigned int max_length = 2;
     for (auto &&word : forbidden_words)
     {
         if (word.size() > max_length)
@@ -25,8 +26,8 @@ void SFT::build_edge_shift(const std::vector<Word> &forbidden_words)
         }
     }
 
-    this->M_step = max_length;
-    this->edge_shift = std::get<0>(get_nth_higher_block_shift(max_length));
+    this->M_step = max_length-1;
+    this->edge_shift = std::get<0>(get_nth_higher_block_shift(max_length-1));
 }
 
 
@@ -38,17 +39,19 @@ void SFT::build_edge_shift(const std::vector<Word> &forbidden_words)
  * We don't assume that the supplied list of blocks is of the same size, blocks shorter than the longest
  * one are padded with all combinations of symbols from the alphabet to construct all forbidden blocks
  */
-std::tuple<UnweightedMatrixGraph, UnweightedMatrixGraph, BlockCode, BlockCode> SFT::get_nth_higher_block_shift(unsigned int n) const
+std::tuple<UnweightedMatrixGraph, UnweightedMatrixGraph, BlockCode, BlockCode> SFT::get_nth_higher_block_shift(
+    unsigned int n) const
 {
     if (n < this->M_step)
     {
         throw std::invalid_argument("SFT::get_nth_higher_block_shift invalid parameter");
     }
     std::vector<Word> forbidden_words_vect =
-        details::generate_full_length_forbidden_words(this->forbidden_words, this->alphabet, n - 1);
+        details::generate_full_length_forbidden_words(this->forbidden_words, this->alphabet, n + 1);
 
     std::set<std::string> forbidden_words_set;
-    std::ranges::transform(forbidden_words_vect, std::inserter(forbidden_words_set, forbidden_words_set.begin()), hash_word);
+    std::ranges::transform(forbidden_words_vect, std::inserter(forbidden_words_set, forbidden_words_set.begin()),
+                           hash_word);
 
     std::vector<Word> allowed_words = details::generate_all_words(this->alphabet, n);
     std::sort(allowed_words.begin(), allowed_words.end());
@@ -97,9 +100,14 @@ std::tuple<UnweightedMatrixGraph, UnweightedMatrixGraph, BlockCode, BlockCode> S
         }
     }
 
-    return {edge_shift, higher_block_edge_shift, BlockCode(block_code, 0, allowed_word_size+1), BlockCode(inverse_block_code, 0, 0)};
+    return {edge_shift, higher_block_edge_shift, BlockCode(block_code, 0, allowed_word_size + 1),
+            BlockCode(inverse_block_code, 0, 0)};
 }
-
+double SFT::entropy()
+{
+    auto [eigvect, eigval] = perron_frobenius_eigen(edge_shift.get_adjacency_matrix().cast<double>());
+    return log(eigval);
+}
 
 unsigned int SFT::get_M_step() const
 {
@@ -107,27 +115,3 @@ unsigned int SFT::get_M_step() const
 }
 
 
-
-std::tuple<SFT, BlockCode> get_sft_factor_map(const SoficShift& shift)
-{
-    auto edges = shift.get_edge_shift().edges();
-    unsigned int counter = 0;
-    std::unordered_map<std::string, unsigned int> map;
-    std::vector<unsigned int> alphabet;
-    for (auto && edge : edges)
-    {
-        alphabet.push_back(counter);
-        map[hash_word(edge.label)] = counter++;
-    }
-
-    auto complement = shift.get_edge_shift().complement();
-    std::vector<Word> forbidden_words;
-    for (auto &&edge: complement.edges())
-    {
-        forbidden_words.push_back({edge.source, edge.dest});
-    }
-
-    return {SFT(alphabet, forbidden_words), BlockCode(map, 0, 0)};
-
-
-}

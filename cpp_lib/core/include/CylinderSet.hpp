@@ -47,12 +47,12 @@ public:
 
     [[nodiscard]] std::vector<CylinderSet> divide_into_disjoint() const;
 
-    [[nodiscard]] bool is_subset_of(const SoficShift &);
-    [[nodiscard]] bool is_subset_of(const CylinderSet &);
+    template<bool RR, bool IRR>
+    [[nodiscard]] bool is_subset_of(const SoficShift<RR, IRR> &);
+    //[[nodiscard]] bool is_subset_of(const CylinderSet &);
 
     virtual ~CylinderSet() = default;
 };
-
 
 
 // Currently we only calculate distances assuming cylinder sets come from a full shift
@@ -82,3 +82,59 @@ class PadicDistance: public Distance
 protected:
     std::tuple<double, double> _bound(CylinderSet &cs1, CylinderSet &cs2) const override;
 };
+
+
+// for right-resolving sofic shifts this only branches on every wildcard
+// for non-right-resolving it might branch on every symbol, leading to bad performance
+inline bool _check_paths_rec(const std::vector<unsigned> &alphabet, const UnweightedMatrixGraph &graph, const Word &word, unsigned int node, unsigned int position)
+{
+    if (position >= word.size()) return true;
+
+    unsigned int current_symbol = word[position];
+    if (current_symbol == WILDCARD)
+    {
+        for (unsigned int symbol: alphabet)
+        {
+            bool symbol_ok = false;
+            for (auto &&edge : graph.edges_from(node))
+            {
+                if (edge.label[0] == symbol)
+                {
+                    symbol_ok = _check_paths_rec(alphabet, graph, word, edge.dest, position+1);
+                    if (symbol_ok) break;
+                }
+            }
+            if (!symbol_ok) return false;
+        }
+
+    }
+    else
+    {
+        bool symbol_ok = false;
+        for (auto &&edge : graph.edges_from(node))
+        {
+            if (edge.label[0] == current_symbol)
+            {
+                symbol_ok = _check_paths_rec(alphabet, graph, word, edge.dest, position+1);
+                if (symbol_ok) break;
+            }
+        }
+        if (!symbol_ok) return false;
+    }
+    return true;
+
+
+}
+
+template<bool RR, bool IRR>
+bool CylinderSet::is_subset_of(const SoficShift<RR, IRR> &ss)
+{
+    const UnweightedMatrixGraph graph = ss.get_edge_shift();
+    for (unsigned node = 0; node < graph.size(); node++)
+    {
+        if (_check_paths_rec(ss.get_alphabet(), graph, representation, node, 0))
+            return true;
+    }
+    return false;
+
+}

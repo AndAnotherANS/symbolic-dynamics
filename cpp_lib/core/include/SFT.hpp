@@ -6,7 +6,7 @@
 
 class BlockCode;
 
-class SFT : public SoficShift
+class SFT : public SoficShift<false, true>
 {
   protected:
     unsigned int M_step = 0;
@@ -24,9 +24,10 @@ class SFT : public SoficShift
     [[nodiscard]] std::tuple<UnweightedMatrixGraph, UnweightedMatrixGraph, BlockCode, BlockCode>
     get_nth_higher_block_shift(unsigned int n) const;
 
+    double entropy();
+
     [[nodiscard]] unsigned int get_M_step() const;
 
     ~SFT() override = default;
 };
 
-std::tuple<SFT, BlockCode> get_sft_factor_map(const SoficShift &shift);

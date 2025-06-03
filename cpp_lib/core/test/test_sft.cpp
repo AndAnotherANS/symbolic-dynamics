@@ -32,7 +32,7 @@ TEST(SFTTest, SFTOperations)
     std::vector<Word> forbidden_words = {{1, 1}, {0, 1, 1}};
 
     SFT sft(alphabet, forbidden_words);
-    ASSERT_EQ(sft.get_M_step(), 3);
+    ASSERT_EQ(sft.get_M_step(), 2);
 }
 
 TEST(SFTTest, BlockCodes)
@@ -49,4 +49,13 @@ TEST(SFTTest, BlockCodes)
     SoficShift sft2 = swap_symbols_automorphism.map(sft);
 
     ASSERT_EQ(sft.get_edge_shift().get_adjacency_matrix(), sft2.get_edge_shift().get_adjacency_matrix());
+}
+
+TEST(SFTTest, Entropy)
+{
+    SFT sft({0, 1}, {{0, 0}});
+    ASSERT_NEAR(sft.entropy(), 0.481, 0.01);
+
+    SFT sft2({0, 1}, {});
+    ASSERT_NEAR(sft2.entropy(), log(2), 0.01);
 }
