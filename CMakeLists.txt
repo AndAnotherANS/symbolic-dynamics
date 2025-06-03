@@ -27,3 +27,5 @@ set_property(TARGET core PROPERTY CXX_STANDARD 20)
 
 add_executable(main main.cpp)
 target_link_libraries(main core) # Link the core library to the main executable
+
+add_subdirectory(examples)

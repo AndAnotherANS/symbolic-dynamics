@@ -1,0 +1,2 @@
+add_executable(golden_mean_shift golden_mean_shift.cpp)
+target_link_libraries(golden_mean_shift core)
