@@ -42,3 +42,23 @@ bool is_primitive(Graph<TWeight> const& graph) {
     const auto& [context, gcd] = detail::period(graph);
     return context.current_scc == 1 && gcd == 1;
 }
+
+
+template<typename TWeight>
+std::vector<Matrix<TWeight>> sccs_as_matrices(MatrixGraph<TWeight> const& graph)
+{
+    auto [sccs, n_sccs] = strongly_connected_components(graph);
+    Eigen::PermutationMatrix<-1, -1, unsigned> node_permutation(graph.size());
+    std::vector<unsigned> scc_sizes(n_sccs + 1);
+    for (int &&i :  sccs) ++scc_sizes[i+1];
+    auto scc_counters(scc_sizes);
+    scc_counters.pop_back();
+    for (int node = 0; node < graph.size(); node++)
+        node_permutation.indices()(node) = scc_counters[sccs[node]]++;
+
+    Matrix<TWeight> almost_block_matrix = (node_permutation * graph.get_adjacency_matrix()) * node_permutation.transpose();
+    std::vector<Matrix<TWeight>> result;
+    for (int i = 1; i < scc_sizes.size(); i++)\
+        result.push_back(almost_block_matrix.block(scc_sizes[i-1], scc_sizes[i-1], scc_sizes[i], scc_sizes[i]));
+    return result;
+}

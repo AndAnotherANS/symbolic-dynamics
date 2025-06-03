@@ -65,7 +65,7 @@ TEST(CylinderSet, SubsetOfShift)
     g.add_edge(1, 0, 1, {0});
     g.add_edge(0, 1, 1, {1});
 
-    SoficShift ss({0, 1}, g);
+    SoficShift<false, true> ss({0, 1}, g);
 
     ASSERT_FALSE(cylinder_set.is_subset_of(ss));
     ASSERT_TRUE(cylinder_set2.is_subset_of(ss));
