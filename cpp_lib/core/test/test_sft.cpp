@@ -32,7 +32,7 @@ TEST(SFTTest, SFTOperations)
     std::vector<Word> forbidden_words = {{1, 1}, {0, 1, 1}};
 
     SFT sft(alphabet, forbidden_words);
-    ASSERT_EQ(sft.get_M_step(), 3);
+    ASSERT_EQ(sft.get_M_step(), 2);
 }
 
 TEST(SFTTest, BlockCodes)
