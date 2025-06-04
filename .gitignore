@@ -176,3 +176,5 @@ build/
 eigen/
 /cmake-build-debug/
 /.clang-format
+
+/install_dir/

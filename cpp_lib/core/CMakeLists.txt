@@ -11,14 +11,37 @@ add_library(core SHARED
         src/Measure.cpp
 )
 
-# Include directories
-
-target_include_directories(core PUBLIC include)
 
 # Link libraries
 target_link_libraries(core)
 target_link_libraries(core Eigen3::Eigen)
 
+target_include_directories(core PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+
+# Install the library
+install(TARGETS core
+        EXPORT coreTargets
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include
+)
+
+# Install all header files
+install(DIRECTORY include/
+        DESTINATION include
+        FILES_MATCHING PATTERN "*.hpp"
+)
+
+# Export targets for find_package
+install(EXPORT coreTargets
+        FILE coreTargets.cmake
+        NAMESPACE core::
+        DESTINATION lib/cmake/core
+)
 
 # Add tests
 add_executable(test_graph test/test_graph.cpp)

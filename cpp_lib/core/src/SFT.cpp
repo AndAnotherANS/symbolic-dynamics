@@ -109,6 +109,16 @@ double SFT::entropy()
     return log(eigval);
 }
 
+bool SFT::is_transitive() const
+{
+    auto [_, n_sccs] = strongly_connected_components(edge_shift);
+    return n_sccs == 1;
+}
+bool SFT::is_mixing() const
+{
+    return is_primitive(edge_shift);
+}
+
 unsigned int SFT::get_M_step() const
 {
     return M_step;

@@ -10,8 +10,7 @@ class ShiftSpace
 
   public:
     ShiftSpace();
-
-    void initialize(const std::vector<std::string> &word);
+    explicit ShiftSpace(const std::vector<unsigned int>& alphabet): alphabet(alphabet) {};
 
     virtual ~ShiftSpace() = default;
 };
