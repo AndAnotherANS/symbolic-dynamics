@@ -38,7 +38,6 @@ void sofic_example()
 
     SoficShift<true, true> full_shift({0, 1}, presentation_full);
 
-    std::cout << full_shift.get_edge_shift().get_adjacency_matrix() << std::endl;
     print_overview(full_shift, "Full shift");
 
     SoficShift<true, false> intersection = sofic_shift_intersection(full_shift, even_shift);

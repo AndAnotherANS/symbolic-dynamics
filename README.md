@@ -12,3 +12,7 @@ sudo sh scripts/install.sh
 This should install the required library (Eigen) and build our library in the `/build` directory
 
 ## Examples
+To compile and run examples, run script:
+```shell
+sudo sh scripts/run_examples.sh
+```
