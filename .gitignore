@@ -169,3 +169,12 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# custom
+build/
+.vscode/
+eigen/
+/cmake-build-debug/
+/.clang-format
+
+/install_dir/
