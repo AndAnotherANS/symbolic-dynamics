@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 project(SymbolicDynamics)
 
-cmake_policy(SET CMP0135 NEW)
 
 
 include(FetchContent)
@@ -25,5 +24,22 @@ enable_testing()
 add_subdirectory(cpp_lib/core)
 set_property(TARGET core PROPERTY CXX_STANDARD 20)
 
-add_executable(main main.cpp)
-target_link_libraries(main core) # Link the core library to the main executable
+include(CMakePackageConfigHelpers)
+
+install(EXPORT coreTargets
+        FILE coreTargets.cmake
+        NAMESPACE core::
+        DESTINATION lib/cmake/core
+)
+
+write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/coreConfigVersion.cmake"
+        VERSION 1.0
+        COMPATIBILITY AnyNewerVersion
+)
+
+install(FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/coreConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/coreConfigVersion.cmake"
+        DESTINATION lib/cmake/core
+)

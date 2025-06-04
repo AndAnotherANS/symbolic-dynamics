@@ -26,6 +26,9 @@ class SFT : public SoficShift<false, true>
 
     double entropy();
 
+    [[nodiscard]] bool is_transitive() const;
+    [[nodiscard]] bool is_mixing() const;
+
     [[nodiscard]] unsigned int get_M_step() const;
 
     ~SFT() override = default;

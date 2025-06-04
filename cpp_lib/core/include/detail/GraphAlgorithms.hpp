@@ -201,7 +201,7 @@ std::pair<StrongconnectContext<TWeight>, int> period(Graph<TWeight> const& graph
 
     int gcd = 0;
     for (auto k : ks) {
-        std::cout << k << "\n";
+        //std::cout << k << "\n";
         gcd = std::gcd(gcd, k);
         if (gcd == 1) {
             break;
