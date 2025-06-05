@@ -5,16 +5,16 @@
 CMAKELISTSDIR="$1"
 if [[ ! -n "$CMAKELISTSDIR" ]]; then
   CMAKELISTSDIR="$PWD"
-endif
+fi
 
-if [[ ! -f "$CMAKELISTSPATH" ]]; then
+if [[ ! -f "$CMAKELISTSDIR/CMakeLists.txt" ]]; then
   echo "Error! CMakeFiles.txt not found"
   echo "Make sure to be in the same directory as a CMakeLists.txt"
   echo "or specify path to a directory with"
   echo "a CMakeLists.txt file on the command line"
-endif
+fi
 
 mkdir -p "${CMAKELISTSDIR}/build"
-cmake -C "${CMAKELISTSDIR}" -B "${CMAKELISTSDIR}/build" -DBUILD_EXAMPLES
+cmake -S "${CMAKELISTSDIR}" -B "${CMAKELISTSDIR}/build" -DBUILD_EXAMPLES=ON
 cmake --build "${CMAKELISTSDIR}/build"
-"${CMAKELISTSDIR}/build/examples"
+"${CMAKELISTSDIR}/build/examples/examples"
