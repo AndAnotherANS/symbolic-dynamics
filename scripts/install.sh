@@ -1,18 +1,21 @@
 #!/usr/bin/env bash
 
-# install eigen
-wget https://gitlab.com/libeigen/eigen/-/archive/3.3.9/eigen-3.3.9.tar.gz
-gzip -d eigen-3.3.9.tar.gz
-tar x -f eigen-3.3.9.tar
-cd eigen-3.3.9 || exit
-mkdir build
-cd build || exit
-cmake ..
-sudo make install
+# read the directory with CMakeLists.txt from the commandline,
+# or if not specified, use the current directory
+CMAKELISTSDIR="$1"
+if [[ ! -n "$CMAKELISTSDIR" ]]; then
+  CMAKELISTSDIR="$PWD"
+fi
 
-# install library
-cd ../..
-mkdir build
-cmake -B build
-cmake --build build
-cmake --install build
+if [[ ! -f "$CMAKELISTSDIR/CMakeLists.txt" ]]; then
+  echo "Error! CMakeFiles.txt not found"
+  echo "Make sure to be in the same directory as a CMakeLists.txt"
+  echo "or specify path to a directory with"
+  echo "a CMakeLists.txt file on the command line"
+fi
+
+# install the library
+mkdir -p "${CMAKELISTSDIR}/build"
+cmake -S "${CMAKELISTSDIR}" -B "${CMAKELISTSDIR}/build"
+cmake --build "${CMAKELISTSDIR}/build"
+sudo cmake --install "${CMAKELISTSDIR}/build"

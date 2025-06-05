@@ -1,7 +1,7 @@
 #pragma once
 #include "Matrix.hpp"
 #include "Utils.hpp"
-#include "eigen3/Eigen/Dense"
+#include <Eigen/Dense>
 #include <algorithm>
 #include <stdexcept>
 #include <string>
