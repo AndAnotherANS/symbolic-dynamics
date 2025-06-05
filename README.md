@@ -7,7 +7,7 @@ to the ones that have some finite presentation, i.e. subshifts of finite type an
 ## Installation
 To install the library, run script located in `scripts/install.sh` from the main directory level (`symbolic-dynamics`)
 ```shell
-sudo scripts/install.sh
+scripts/install.sh
 ```
 This should install the required library (Eigen) and build our library in the `/build` directory
 

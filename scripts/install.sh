@@ -18,4 +18,4 @@ fi
 mkdir -p "${CMAKELISTSDIR}/build"
 cmake -S "${CMAKELISTSDIR}" -B "${CMAKELISTSDIR}/build"
 cmake --build "${CMAKELISTSDIR}/build"
-cmake --install "${CMAKELISTSDIR}/build"
+sudo cmake --install "${CMAKELISTSDIR}/build"
