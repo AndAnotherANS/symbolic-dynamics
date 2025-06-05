@@ -45,21 +45,21 @@ install(EXPORT coreTargets
 
 # Add tests
 add_executable(test_graph test/test_graph.cpp)
-target_link_libraries(test_graph gtest_main core)
+target_link_libraries(test_graph GTest::gtest_main core)
 add_test(NAME Graph COMMAND test_graph)
 
 add_executable(test_sft test/test_sft.cpp)
-target_link_libraries(test_sft gtest_main core)
+target_link_libraries(test_sft GTest::gtest_main core)
 add_test(NAME SFT COMMAND test_sft)
 
 add_executable(test_strongly_connected_components test/test_strongly_connected_components.cpp)
-target_link_libraries(test_strongly_connected_components gtest_main core)
+target_link_libraries(test_strongly_connected_components GTest::gtest_main core)
 add_test(NAME StronglyConnectedComponents COMMAND test_strongly_connected_components)
 
 add_executable(test_period test/test_period.cpp)
-target_link_libraries(test_period gtest_main core)
+target_link_libraries(test_period GTest::gtest_main core)
 add_test(NAME Acyclic COMMAND test_period)
 
 add_executable(test_cylinder test/test_cylinder_sets.cpp)
-target_link_libraries(test_cylinder gtest_main core)
+target_link_libraries(test_cylinder GTest::gtest_main core)
 add_test(NAME CylinderSet COMMAND test_cylinder)
